@@ -5,6 +5,7 @@
       <nav aria-label="Secciones">
         <a routerLink="/" [class.activo]="enResumen()">Resumen</a>
         <a routerLink="/graficos" routerLinkActive="activo">Gráficos</a>
+        <a routerLink="/hogar" routerLinkActive="activo">Hogar</a>
         <a routerLink="/personas" routerLinkActive="activo">Personas</a>
       </nav>
       <div class="usuario">
@@ -13,6 +14,14 @@
       </div>
     </div>
   </header>
+  @if (hayVersionNueva()) {
+    <div class="pagina error-global">
+      <div class="aviso advertencia fila">
+        Hay una versión nueva de la app.
+        <button class="boton boton-chico" (click)="recargar()">Actualizar</button>
+      </div>
+    </div>
+  }
   @if (datos.error()) {
     <div class="pagina error-global"><div class="aviso error">{{ datos.error() }}</div></div>
   }

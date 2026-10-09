@@ -1,0 +1,50 @@
+<main class="pagina">
+  <header class="encabezado">
+    <div>
+      <h1>Hogar</h1>
+      <p class="ayuda">Gastos compartidos, ahorro y reparto del mes.</p>
+    </div>
+    <div class="controles">
+      <div class="selector" role="group" aria-label="Sección">
+        @for (v of vistas; track v.id) {
+          <button class="boton boton-chico" type="button" [attr.aria-pressed]="vista() === v.id" (click)="vista.set(v.id)">{{ v.nombre }}</button>
+        }
+      </div>
+      @if (vista() === 'mes' || vista() === 'ajustes') {
+        <label class="mes">Mes
+          <input type="month" [value]="mesId()" (change)="elegirMes($event)" />
+        </label>
+      }
+    </div>
+  </header>
+
+  @if (hogar.error()) { <div class="aviso error">{{ hogar.error() }}</div> }
+
+  @if (hogar.cargando()) {
+    <div class="vacio">Cargando…</div>
+  } @else {
+    @switch (vista()) {
+      @case ('mes') {
+        @if (datosMes(); as m) {
+          <div class="columnas">
+            <app-formulario-mes [id]="mesId()" [mes]="m" [anterior]="datosAnterior()" [nombreAnterior]="nombreAnterior()" />
+            <app-resultados-mes [mes]="m" />
+          </div>
+        } @else {
+          <section class="panel vacio">
+            <strong>No hay datos de {{ nombre() }}</strong>
+            @if (nombreAnterior()) {
+              <span>Se crea a partir de {{ nombreAnterior() }}: mismos sueldos y gastos, y lo que se gastó pasa a ser el estimado.</span>
+            } @else {
+              <span>Empezás de cero: cargá sueldos, gastos y ahorro.</span>
+            }
+            <button class="boton boton-primario" type="button" (click)="crear()">Crear {{ nombre() }}</button>
+          </section>
+        }
+      }
+      @case ('historial') { <app-historial-hogar /> }
+      @case ('metas') { <app-metas-hogar /> }
+      @case ('ajustes') { <app-ajustes-hogar [mes]="mesId()" (borrado)="irA(undefined)" /> }
+    }
+  }
+</main>

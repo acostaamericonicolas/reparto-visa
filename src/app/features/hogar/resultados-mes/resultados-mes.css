@@ -1,0 +1,78 @@
+:host {
+  display: grid;
+  gap: 18px;
+  align-content: start;
+  min-width: 0;
+}
+.bloque {
+  padding: 16px;
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+.desplazable {
+  overflow-x: auto;
+}
+.indicadores {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+.indicador {
+  display: grid;
+  gap: 2px;
+  padding: 10px 14px;
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  background: var(--superficie);
+}
+.indicador strong {
+  font-size: 18px;
+}
+.indicador.destacado {
+  background: var(--acento-suave);
+  border-color: var(--acento);
+}
+tfoot td,
+tr.fuerte td {
+  font-weight: 600;
+}
+tfoot td {
+  border-bottom: 0;
+}
+.recibe {
+  color: var(--aviso);
+}
+tr.pasado td {
+  color: var(--peligro);
+}
+.distribucion {
+  display: flex;
+  height: 14px;
+  border-radius: 7px;
+  overflow: hidden;
+  background: var(--linea);
+}
+.distribucion span {
+  display: block;
+  height: 100%;
+}
+.leyenda {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.leyenda li {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.crece {
+  flex: 1;
+}
+.porcentaje {
+  min-width: 56px;
+  color: var(--texto-2);
+}

@@ -1,0 +1,73 @@
+:host {
+  display: grid;
+  gap: 18px;
+  max-width: 720px;
+}
+.bloque {
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+}
+.indicadores {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+.indicador {
+  display: grid;
+  gap: 2px;
+  padding: 10px 14px;
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  background: var(--superficie);
+}
+.indicador strong {
+  font-size: 18px;
+}
+.indicador.destacado {
+  background: var(--acento-suave);
+  border-color: var(--acento);
+}
+label {
+  display: grid;
+  gap: 4px;
+  font-size: 12.5px;
+  color: var(--texto-2);
+}
+input[type='text'],
+input[type='month'] {
+  width: 100%;
+}
+.titulo {
+  font: 700 16px var(--f-titulo);
+}
+.crece {
+  flex: 1;
+  min-width: 160px;
+}
+.dos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+.progreso {
+  height: 14px;
+  border-radius: 7px;
+  background: var(--linea);
+  overflow: hidden;
+}
+.progreso span {
+  display: block;
+  height: 100%;
+  background: var(--acento);
+}
+.progreso span.completa {
+  background: var(--ok);
+}
+.datos {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  justify-content: space-between;
+}

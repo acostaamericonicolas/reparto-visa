@@ -1,0 +1,128 @@
+<section class="panel bloque">
+  <h2>Sueldos</h2>
+  <div class="dos">
+    @for (q of quienes; track q) {
+      <label>{{ nombres()[q] }}
+        <input type="text" inputmode="decimal" [value]="mes().ingresos[q] || ''" (change)="sueldo(q, $event)" />
+      </label>
+    }
+  </div>
+</section>
+
+<section class="panel bloque">
+  <h2>Ahorro en USD</h2>
+  <div class="dos">
+    <label>USD planificados
+      <input type="text" inputmode="decimal" [value]="mes().usd.planificados || ''" (change)="ahorro('planificados', $event)" />
+    </label>
+    <label>USD comprados (real)
+      <input type="text" inputmode="decimal" placeholder="pendiente" [value]="mes().usd.comprados ?? ''" (change)="compradosUsd($event)" />
+    </label>
+    <label>Cotización a la que compraste
+      <input type="text" inputmode="decimal" [value]="mes().usd.cotizacion || ''" (change)="ahorro('cotizacion', $event)" />
+    </label>
+    <label>Los pagó
+      <select (change)="pagaUsd($event)">
+        <option value="pozo" [selected]="mes().usd.pagadoPor === 'pozo'">Cuenta común</option>
+        @for (q of quienes; track q) {
+          <option [value]="q" [selected]="mes().usd.pagadoPor === q">{{ nombres()[q] }}</option>
+        }
+      </select>
+    </label>
+  </div>
+  <p class="ayuda">
+    Equivale a <strong>{{ usdEnPesos() | pesos }}</strong>. Cuenta como gasto compartido. Mientras no cargues los
+    comprados, se usan los planificados.
+  </p>
+  <details class="desplegable">
+    <summary>Comparar cotizaciones</summary>
+    <app-cotizaciones [actual]="mes().usd.cotizacion" (elegida)="cotizacionElegida($event)" />
+  </details>
+</section>
+
+<section class="panel bloque">
+  <h2>Gastos compartidos</h2>
+  @for (g of mes().gastos; track g.id) {
+    <div class="gasto" [class.pasado]="estado(g).pasado">
+      <input type="text" class="concepto" placeholder="Concepto" aria-label="Concepto" [value]="g.concepto" (change)="concepto(g.id, $event)" />
+      <select aria-label="Categoría" class="categoria" (change)="categoria(g.id, $event)">
+        @for (c of opciones(g); track c) { <option [value]="c" [selected]="c === g.categoria">{{ c }}</option> }
+      </select>
+      <button class="boton boton-chico boton-peligro quitar" type="button" aria-label="Quitar gasto" (click)="quitar(g.id)">×</button>
+      <label>Estimado
+        <input type="text" inputmode="decimal" placeholder="0" [value]="g.estimado || ''" (change)="estimado(g.id, $event)" />
+      </label>
+      <label class="campo-real">Real
+        <input type="text" inputmode="decimal" placeholder="pendiente" [value]="g.real ?? ''" (change)="real(g.id, $event)" />
+      </label>
+      <label>Pagó
+        <select (change)="pagadoPor(g.id, $event)">
+          <option value="pozo" [selected]="g.pagadoPor === 'pozo'">Cuenta común</option>
+          @for (q of quienes; track q) {
+            <option [value]="q" [selected]="g.pagadoPor === q">{{ nombres()[q] }}</option>
+          }
+        </select>
+      </label>
+      <label class="recurrente">
+        <input type="checkbox" [checked]="g.recurrente" (change)="recurrente(g.id, $event)" />
+        Se repite todos los meses
+      </label>
+      @if (estado(g); as e) {
+        @if (e.pasado) {
+          <p class="diferencia sube">Se pasó {{ e.diferencia | pesos }} del estimado</p>
+        } @else if (e.diferencia < 0) {
+          <p class="diferencia ayuda">{{ -e.diferencia | pesos }} por debajo del estimado</p>
+        }
+      }
+      @if (variacion(g); as v) {
+        <p class="diferencia" [class.sube]="v > 0" [class.baja]="v < 0">{{ porcentaje(v) }} contra {{ nombreAnterior() }}</p>
+      }
+    </div>
+  } @empty {
+    <p class="ayuda">Todavía no hay gastos. Agregá los de siempre (luz, súper, nafta…).</p>
+  }
+  <div class="fila"><button class="boton" type="button" (click)="agregar()">+ Agregar gasto</button></div>
+  <p class="ayuda">
+    Al inicio del mes cargá el <strong>estimado</strong>; durante el mes completá el <strong>real</strong>. Si todavía no
+    cargaste el real, el cálculo usa el estimado. Un gasto que se pasa del estimado se marca en rojo. Los que se repiten
+    todos los meses pasan solos al mes siguiente; destildá los de una sola vez.
+  </p>
+</section>
+
+<section class="panel bloque">
+  <h2>Tarjetas de crédito (individual)</h2>
+  <div class="dos">
+    @for (q of quienes; track q) {
+      <label>{{ nombres()[q] }}
+        <input type="text" inputmode="decimal" [value]="mes().tarjetas[q] || ''" (change)="tarjeta(q, $event)" />
+      </label>
+    }
+  </div>
+  <div class="fila">
+    <button class="boton" type="button" (click)="traerDeLaTarjeta()">Traer de Reparto Visa</button>
+    <a class="boton" routerLink="/">Ver resúmenes</a>
+  </div>
+  @if (avisoTarjeta(); as a) { <p class="error">{{ a.texto }}</p> }
+  @if (mes().tarjetasOrigen; as o) {
+    <p class="ayuda">
+      Tomado del resumen con cierre {{ o.cierre }} y vencimiento {{ o.vence }}. Total del resumen: {{ o.total | pesos }};
+      de otras personas: {{ o.otros | pesos }}.
+    </p>
+    @if (o.sinAsignar > 0) {
+      <p class="aviso advertencia">
+        Hay {{ o.sinAsignar | pesos }} sin asignar en el resumen. Si son de ustedes, asignalos en Resumen y volvé a traer los totales.
+      </p>
+    }
+    @if (o.usd.nico > 0 || o.usd.nanu > 0) {
+      <p class="aviso advertencia">
+        Además hay US$ {{ formato(o.usd.nico) }} de {{ nombres().nico }} y US$ {{ formato(o.usd.nanu) }} de {{ nombres().nanu }}
+        en dólares, que no se suman a la tarjeta en pesos.
+      </p>
+    }
+  }
+</section>
+
+<section class="panel bloque">
+  <h2>Notas del mes</h2>
+  <textarea rows="4" placeholder="Cosas para recordar, gastos puntuales, acuerdos…" [value]="mes().notas" (change)="notas($event)"></textarea>
+</section>

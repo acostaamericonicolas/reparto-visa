@@ -46,17 +46,6 @@ tfoot td {
 tr.pasado td {
   color: var(--peligro);
 }
-.distribucion {
-  display: flex;
-  height: 14px;
-  border-radius: 7px;
-  overflow: hidden;
-  background: var(--linea);
-}
-.distribucion span {
-  display: block;
-  height: 100%;
-}
 .leyenda {
   list-style: none;
   margin: 0;
@@ -75,4 +64,26 @@ tr.pasado td {
 .porcentaje {
   min-width: 56px;
   color: var(--texto-2);
+}
+.indicador.pendiente {
+  border-color: var(--aviso);
+  background: var(--aviso-suave);
+}
+.todo-pagado {
+  margin: 0;
+  color: var(--ok);
+  font-weight: 600;
+}
+.faltan {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.faltan li {
+  display: flex;
+  gap: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--linea);
 }

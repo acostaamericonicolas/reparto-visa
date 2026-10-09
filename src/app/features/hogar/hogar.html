@@ -10,7 +10,7 @@
           <button class="boton boton-chico" type="button" [attr.aria-pressed]="vista() === v.id" (click)="vista.set(v.id)">{{ v.nombre }}</button>
         }
       </div>
-      @if (vista() === 'mes' || vista() === 'ajustes') {
+      @if (vista() === 'mes' || vista() === 'personal' || vista() === 'ajustes') {
         <label class="mes">Mes
           <input type="month" [value]="mesId()" (change)="elegirMes($event)" />
         </label>
@@ -31,15 +31,14 @@
             <app-resultados-mes [mes]="m" />
           </div>
         } @else {
-          <section class="panel vacio">
-            <strong>No hay datos de {{ nombre() }}</strong>
-            @if (nombreAnterior()) {
-              <span>Se crea a partir de {{ nombreAnterior() }}: mismos sueldos y gastos, y lo que se gastó pasa a ser el estimado.</span>
-            } @else {
-              <span>Empezás de cero: cargá sueldos, gastos y ahorro.</span>
-            }
-            <button class="boton boton-primario" type="button" (click)="crear()">Crear {{ nombre() }}</button>
-          </section>
+          <ng-container *ngTemplateOutlet="sinMes" />
+        }
+      }
+      @case ('personal') {
+        @if (datosMes(); as m) {
+          <app-personal-hogar [id]="mesId()" [mes]="m" />
+        } @else {
+          <ng-container *ngTemplateOutlet="sinMes" />
         }
       }
       @case ('historial') { <app-historial-hogar /> }
@@ -48,3 +47,15 @@
     }
   }
 </main>
+
+<ng-template #sinMes>
+  <section class="panel vacio">
+    <strong>No hay datos de {{ nombre() }}</strong>
+    @if (nombreAnterior()) {
+      <span>Se crea a partir de {{ nombreAnterior() }}: mismos sueldos y gastos que se repiten, y lo que se gastó pasa a ser el estimado.</span>
+    } @else {
+      <span>Empezás de cero: cargá sueldos, gastos y ahorro.</span>
+    }
+    <button class="boton boton-primario" type="button" (click)="crear()">Crear {{ nombre() }}</button>
+  </section>
+</ng-template>

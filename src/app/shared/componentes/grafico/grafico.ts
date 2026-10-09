@@ -66,7 +66,8 @@ export class Grafico implements OnDestroy {
         tension: 0.25,
         spanGaps: true,
         // Las líneas de referencia no se apilan con las barras.
-        stack: s.linea ? 'linea-' + s.nombre : 'barras',
+        // Apiladas comparten grupo; sin apilar, cada serie tiene el suyo y las barras quedan una al lado de la otra.
+        stack: s.linea ? 'linea-' + s.nombre : this.apilado() ? 'barras' : 'serie-' + s.nombre,
         order: s.linea ? 0 : 1,
       };
     });

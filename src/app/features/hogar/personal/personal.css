@@ -1,0 +1,119 @@
+:host {
+  display: grid;
+  gap: 18px;
+  max-width: 760px;
+}
+.selector {
+  display: flex;
+  gap: 6px;
+}
+.selector [aria-pressed='true'] {
+  border-color: var(--acento);
+  background: var(--acento-suave);
+  color: var(--acento);
+  font-weight: 600;
+}
+.indicadores {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+.indicador {
+  display: grid;
+  gap: 2px;
+  padding: 10px 14px;
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  background: var(--superficie);
+}
+.indicador strong {
+  font-size: 18px;
+}
+.indicador.destacado {
+  background: var(--acento-suave);
+  border-color: var(--acento);
+}
+.indicador.negativo {
+  background: var(--aviso-suave);
+  border-color: var(--peligro);
+}
+.indicador.negativo strong {
+  color: var(--peligro);
+}
+.barra {
+  height: 12px;
+  border-radius: 6px;
+  background: var(--linea);
+  overflow: hidden;
+}
+.barra span {
+  display: block;
+  height: 100%;
+  background: var(--acento);
+}
+.barra span.pasado {
+  background: var(--peligro);
+}
+.bloque {
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+}
+.titulo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  justify-content: space-between;
+  align-items: center;
+}
+.gasto {
+  display: grid;
+  grid-template-columns: 9rem 1.5fr 1fr 8rem auto;
+  gap: 6px;
+  align-items: center;
+}
+input[type='text'],
+input[type='date'],
+select {
+  width: 100%;
+}
+.categorias {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.categorias li {
+  display: grid;
+  grid-template-columns: 7rem 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+.relleno {
+  height: 10px;
+  border-radius: 5px;
+  background: var(--linea);
+  overflow: hidden;
+}
+.relleno span {
+  display: block;
+  height: 100%;
+  background: var(--p1);
+}
+@media (max-width: 700px) {
+  .gasto {
+    grid-template-columns: 1fr 1fr auto;
+  }
+  .gasto .concepto {
+    grid-column: 1 / 3;
+    grid-row: 2;
+  }
+  .gasto select {
+    grid-column: 1 / 3;
+    grid-row: 3;
+  }
+  .gasto input[inputmode] {
+    grid-row: 1;
+  }
+}

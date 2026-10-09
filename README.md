@@ -21,6 +21,11 @@ Sección **Hogar** (`/hogar`) para llevar los gastos de la casa de dos personas:
 - Un mes nuevo hereda del anterior: lo gastado pasa a ser el estimado y el real queda pendiente.
 - **Gastos recurrentes:** los que se repiten todos los meses pasan solos al mes siguiente; los de una sola vez se destildan y se quedan en su mes. Si un gasto cambia 10 % o más contra el mes anterior, se avisa.
 - **Metas de ahorro:** objetivo en dólares (por defecto, la casa propia), cuánto se lleva, cuánto falta y en cuánto tiempo se llega al ritmo de los últimos 3 meses. Solo cuentan los dólares comprados. Las metas se llenan en orden.
+- **Qué falta pagar:** cada gasto tiene una tilde de "ya se pagó"; los dólares ("ya compré") y el resumen de cada tarjeta también. Lo que se paga en varias veces (nafta, súper) se carga como **pagos en partes**, cada uno con quién lo pagó. Mientras un gasto no está pagado, el mes cuenta al menos el estimado.
+- **Gasto compartido que va en la tarjeta** (por ejemplo un seguro): se elige "Tarjeta de …" y no se cuenta dos veces: de la tarjeta solo se descuenta lo personal.
+- **Extras de sueldo** (aguinaldo, bono): valen solo para ese mes y se suman al sueldo.
+- **Mis gastos:** cada uno anota sus gastos propios (efectivo, débito, salidas) y ve cuánto le queda de lo libre.
+- La lista de gastos compartidos es desplegable: cada gasto es una fila que se abre para editarlo.
 
 Quién es cada uno se elige en Hogar → Ajustes (por defecto, las personas que se llaman "Nico" y "Nanu").
 

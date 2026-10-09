@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from '@angular/common';
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Hogar } from '../../services/hogar';
@@ -7,15 +8,16 @@ import { AjustesHogar } from './ajustes/ajustes';
 import { FormularioMes } from './formulario-mes/formulario-mes';
 import { HistorialHogar } from './historial/historial';
 import { MetasHogar } from './metas/metas';
+import { PersonalHogar } from './personal/personal';
 import { ResultadosMes } from './resultados-mes/resultados-mes';
 
-type Vista = 'mes' | 'historial' | 'metas' | 'ajustes';
+type Vista = 'mes' | 'personal' | 'historial' | 'metas' | 'ajustes';
 const MES = /^\d{4}-(0[1-9]|1[0-2])$/;
 
-/** Gastos del hogar: carga del mes, resultados, historial y ajustes. */
+/** Gastos del hogar: carga del mes, gastos de cada uno, historial, metas y ajustes. */
 @Component({
   selector: 'app-hogar',
-  imports: [FormularioMes, ResultadosMes, HistorialHogar, MetasHogar, AjustesHogar],
+  imports: [NgTemplateOutlet, FormularioMes, ResultadosMes, HistorialHogar, MetasHogar, PersonalHogar, AjustesHogar],
   templateUrl: './hogar.html',
   styleUrl: './hogar.css',
 })
@@ -29,6 +31,7 @@ export class HogarPagina {
   protected vista = signal<Vista>('mes');
   protected readonly vistas: { id: Vista; nombre: string }[] = [
     { id: 'mes', nombre: 'Mes' },
+    { id: 'personal', nombre: 'Mis gastos' },
     { id: 'historial', nombre: 'Historial' },
     { id: 'metas', nombre: 'Metas' },
     { id: 'ajustes', nombre: 'Ajustes' },

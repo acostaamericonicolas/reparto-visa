@@ -4,9 +4,12 @@ import { progresoAhorro } from './metas';
 
 const mes = (comprados: number | null): MesHogar => ({
   ingresos: { nico: 0, nanu: 0 },
+  extras: { nico: [], nanu: [] },
+  individuales: { nico: [], nanu: [] },
   usd: { planificados: 700, comprados, cotizacion: 1500, pagadoPor: 'pozo' },
   gastos: [],
   tarjetas: { nico: 0, nanu: 0 },
+  tarjetasPagadas: { nico: false, nanu: false },
   notas: '',
 });
 const meta = (id: string, objetivoUsd: number, hasta = ''): MetaAhorro => ({ id, nombre: id, objetivoUsd, hasta });

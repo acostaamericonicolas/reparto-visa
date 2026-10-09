@@ -1,0 +1,103 @@
+/*
+ * Reparto Visa — estilos globales
+ * Planilla de liquidación: totales por persona arriba, tabla del resumen abajo.
+ * Los colores son variables: cambiando una cambia toda la app (claro y oscuro).
+ * Cada componente solo agrega su disposición propia.
+ */
+
+/* 1. Variables ------------------------------------------------------ */
+:root {
+  --fondo: #f3f5f7;
+  --superficie: #ffffff;
+  --texto: #17202a;
+  --texto-2: #5d6b78;
+  --linea: #d9e0e6;
+  --acento: #1d5c8c;
+  --acento-suave: #e3eef7;
+  --aviso: #a4570a;
+  --aviso-suave: #fbf0e2;
+  --peligro: #b3261e;
+  --ok: #2f7d4a;
+
+  /* Un color por persona (en el orden de la lista de personas). Paleta fría; los tonos parecidos no quedan
+     juntos para que se distingan en las barras apiladas. "Sin asignar" usa --aviso. */
+  --p1: #2563eb; --p2: #0f9f86; --p3: #6366f1; --p4: #65a30d;
+  --p5: #0284c7; --p6: #64748b; --p7: #0d9488; --p8: #0891b2;
+
+  --f-titulo: 'Familjen Grotesk', 'Segoe UI', system-ui, sans-serif;
+  --f-texto: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+  --f-numeros: 'IBM Plex Mono', ui-monospace, Consolas, monospace;
+  --radio: 8px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fondo: #11161b;
+    --superficie: #192028;
+    --texto: #e5ebf0;
+    --texto-2: #94a3b0;
+    --linea: #2b3641;
+    --acento: #7db5e0;
+    --acento-suave: #1d3044;
+    --aviso: #e8a65a;
+    --aviso-suave: #3a2a17;
+    --peligro: #f2867e;
+    --ok: #7fcf95;
+    --p1: #3b82f6; --p2: #2ec4a6; --p3: #818cf8; --p4: #a3e635;
+    --p5: #60a5fa; --p6: #94a3b8; --p7: #14b8a6; --p8: #22d3ee;
+    color-scheme: dark;
+  }
+}
+
+/* 2. Base ----------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--fondo); color: var(--texto); font: 14px/1.45 var(--f-texto); }
+h1, h2, h3 { font-family: var(--f-titulo); margin: 0; text-wrap: balance; }
+h1 { font-size: 24px; letter-spacing: -0.01em; }
+h2 { font-size: 16px; }
+button, select, input, textarea { font: inherit; color: inherit; }
+select, input[type='text'], input[type='number'] {
+  border: 1px solid var(--linea); background: var(--superficie); border-radius: 6px; padding: 6px 8px;
+}
+:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; }
+a { color: var(--acento); }
+
+table { border-collapse: collapse; width: 100%; }
+th, td { padding: 7px 10px; border-bottom: 1px solid var(--linea); vertical-align: middle; text-align: left; }
+th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--texto-2); font-weight: 600; }
+.num { text-align: right; font-family: var(--f-numeros); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* 3. Utilitarias ----------------------------------------------------- */
+.pagina { max-width: 1180px; margin: 0 auto; padding-inline: 16px; padding-block: 20px 48px; display: grid; gap: 18px; }
+.panel { background: var(--superficie); border: 1px solid var(--linea); border-radius: var(--radio); }
+.ayuda { font-size: 12.5px; color: var(--texto-2); margin: 0; }
+.fila { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+
+.boton { border: 1px solid var(--linea); background: var(--superficie); border-radius: 6px; padding: 7px 12px; cursor: pointer; white-space: nowrap; }
+.boton:hover { border-color: var(--acento); }
+.boton:disabled { opacity: 0.55; cursor: default; }
+.boton-primario { background: var(--acento); border-color: var(--acento); color: var(--superficie); font-weight: 600; }
+.boton-chico { padding: 3px 8px; font-size: 12.5px; }
+.boton-link { border: 0; background: none; color: var(--acento); padding: 2px 4px; cursor: pointer; }
+.boton-peligro { color: var(--peligro); }
+
+.aviso { border: 1px solid var(--linea); background: var(--superficie); border-radius: var(--radio); padding: 10px 14px; font-size: 13.5px; }
+.aviso.advertencia { border-color: var(--aviso); background: var(--aviso-suave); }
+.aviso.error { border-color: var(--peligro); }
+
+p.error { color: var(--peligro); font-size: 12.5px; margin: 0; }
+
+.etiqueta { display: inline-block; font-size: 11px; font-weight: 600; border-radius: 999px; padding: 1px 8px; white-space: nowrap; }
+.etiqueta.auto { background: var(--acento-suave); color: var(--acento); }
+.etiqueta.nuevo { background: var(--aviso-suave); color: var(--aviso); border: 1px solid var(--aviso); }
+.punto { width: 10px; height: 10px; border-radius: 50%; flex: none; display: inline-block; }
+.sube { color: var(--peligro); }
+.baja { color: var(--ok); }
+
+.vacio { padding: 40px 20px; text-align: center; color: var(--texto-2); display: grid; gap: 10px; justify-items: center; }
+.vacio strong { color: var(--texto); font: 700 18px var(--f-titulo); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .boton { transition: border-color 0.15s; }
+}

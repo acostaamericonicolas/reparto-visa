@@ -1,0 +1,68 @@
+<main class="pagina">
+  <h1>Personas</h1>
+
+  @if (mensaje()) { <div class="aviso">{{ mensaje() }}</div> }
+  @if (error()) { <div class="aviso error">{{ error() }}</div> }
+
+  <div class="columnas">
+    <section class="panel bloque">
+      <h2>Quiénes usan la tarjeta</h2>
+      @for (p of datos.personas(); track p.id) {
+        <div class="fila">
+          <span class="punto" [style.background]="color(p.id)"></span>
+          <input type="text" class="crece" [id]="'nombre-' + p.id" [value]="p.nombre"
+                 aria-label="Nombre" (change)="renombrar(p.id, $event)" />
+          <button class="boton boton-chico boton-peligro" (click)="eliminar(p.id)">
+            {{ confirmando() === p.id ? '¿Seguro? Tocá de nuevo' : 'Eliminar' }}
+          </button>
+        </div>
+      } @empty {
+        <p class="ayuda">Agregá las personas con las que compartís la tarjeta.</p>
+      }
+
+      <form class="fila" novalidate (submit)="agregar($event)">
+        <input type="text" class="crece" placeholder="Nombre (ej. Juan)" aria-label="Nombre de la persona nueva"
+               [formField]="fNueva.nombre" />
+        <button class="boton" type="submit">Agregar</button>
+      </form>
+      @if (fNueva.nombre().touched() && fNueva.nombre().invalid()) {
+        <p class="error">{{ fNueva.nombre().errors()[0].message }}</p>
+      }
+    </section>
+
+    <section class="panel bloque">
+      <h2>Dueño de cada tarjeta</h2>
+      <p class="ayuda">
+        Al importar un resumen, los ítems de esa tarjeta que no se completan desde otro mes se asignan a esta persona.
+      </p>
+      @for (t of tarjetas(); track t) {
+        <div class="fila">
+          <span class="crece">{{ t }}</span>
+          <select [attr.aria-label]="'Dueño de ' + t" (change)="duenoTarjeta(t, $event)">
+            <option value="" [selected]="!datos.config().tarjetas[t]">— Ninguno —</option>
+            @for (p of datos.personas(); track p.id) {
+              <option [value]="p.id" [selected]="datos.config().tarjetas[t] === p.id">{{ p.nombre }}</option>
+            }
+          </select>
+        </div>
+      } @empty {
+        <p class="ayuda">Aparecen cuando importás un resumen.</p>
+      }
+    </section>
+
+    <section class="panel bloque">
+      <h2>Respaldo</h2>
+      <p class="ayuda">
+        Descargá una copia de todos los meses o restaurala desde un archivo. Restaurar reemplaza los meses que
+        vengan en el archivo (y las personas, si el archivo las trae).
+      </p>
+      <div class="fila">
+        <button class="boton" (click)="descargarRespaldo()">Descargar respaldo</button>
+        <label class="boton">
+          Restaurar respaldo
+          <input type="file" accept="application/json,.json" (change)="restaurar($event)" hidden />
+        </label>
+      </div>
+    </section>
+  </div>
+</main>

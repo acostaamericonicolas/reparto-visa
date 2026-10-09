@@ -1,0 +1,19 @@
+.login {
+  max-width: 460px;
+  margin: 10vh auto 0;
+  padding: 40px 24px;
+  text-align: center;
+  display: grid;
+  gap: 14px;
+  justify-items: center;
+}
+.prueba {
+  display: grid;
+  gap: 6px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--linea);
+}
+.login p {
+  margin: 0;
+  color: var(--texto-2);
+}

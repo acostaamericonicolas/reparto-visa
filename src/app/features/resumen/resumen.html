@@ -1,0 +1,73 @@
+<main class="pagina">
+  <header class="encabezado">
+    <div>
+      <h1>Resumen</h1>
+      @if (resumen(); as r) {
+        <p class="ayuda">
+          Cierre {{ r.meta.cierre }} · vence {{ r.meta.vence || '—' }} · saldo {{ r.meta.saldo | pesos }}
+          @if (r.meta.saldoUsd) { + {{ r.meta.saldoUsd | dolares }} }
+        </p>
+      }
+    </div>
+    <label class="boton boton-primario" [class.ocupado]="importando()">
+      {{ importando() ? 'Importando…' : 'Importar PDF del resumen' }}
+      <input type="file" accept="application/pdf" (change)="importar($event)" [disabled]="importando()" hidden />
+    </label>
+  </header>
+
+  @if (lista().length) {
+    <app-pestanas-meses [resumenes]="lista()" [actual]="mesId()" />
+  }
+
+  @if (estado(); as e) {
+    <div class="aviso" [class.advertencia]="e.tipo === 'advertencia'" [class.error]="e.tipo === 'error'">
+      {{ e.texto }}
+      @for (a of e.avisos ?? []; track $index) {
+        <br />{{ a }}
+      }
+    </div>
+  }
+
+  @if (copia(); as c) {
+    <div class="aviso">
+      <div class="fila entre">
+        <strong>{{ c.titulo }}</strong>
+        <button class="boton boton-chico" (click)="copia.set(null)">Cerrar</button>
+      </div>
+      <p class="ayuda">No se pudo copiar automáticamente. Seleccioná el texto y copialo con Ctrl+C.</p>
+      <textarea class="texto-copia" readonly [value]="c.texto"></textarea>
+    </div>
+  }
+
+  @if (datos.cargando()) {
+    <div class="vacio">Cargando…</div>
+  } @else if (resumen(); as r) {
+    <app-totales-personas [resumen]="r" [personas]="datos.personas()" [filtro]="filtro()" (filtroChange)="cambiarFiltro($event)" (copiar)="copiar($event)"
+                          (cambiarEstado)="datos.cambiarEstado(r.meta.id, $event.persona, $event.campo, $event.valor)" />
+
+    <section class="panel">
+      <div class="cabecera-tabla">
+        <h2>Movimientos ({{ r.rows.length }})</h2>
+        <div class="fila">
+          <span class="ayuda">
+            <span class="etiqueta auto">Autocompletado</span> sale de otro mes ·
+            <span class="etiqueta nuevo">Nuevo</span> falta asignar
+          </span>
+          <button class="boton boton-chico" (click)="completar()" title="Copia el reparto de otros meses a los ítems sin asignar">
+            Completar desde otros meses
+          </button>
+        </div>
+      </div>
+      <app-tabla-items [resumen]="r" [personas]="datos.personas()" [filtro]="filtro()" (verImpuestos)="impuestos.set($event)" />
+    </section>
+  } @else {
+    <section class="panel vacio">
+      <strong>Todavía no hay ningún resumen cargado</strong>
+      <span>Tocá “Importar PDF del resumen” y elegí el PDF que te manda el banco (Visa ICBC).</span>
+    </section>
+  }
+</main>
+
+@if (impuestos(); as item) {
+  <app-detalle-impuestos [item]="item" (cerrar)="impuestos.set(null)" />
+}

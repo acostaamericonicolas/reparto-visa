@@ -1,0 +1,18 @@
+<main class="pagina">
+  <section class="panel login">
+    <h1>Reparto Visa</h1>
+    <p>Repartí el resumen de la tarjeta entre las personas que la usan.</p>
+    <button class="boton boton-primario" (click)="sesion.entrar()">Entrar con Google</button>
+    <p class="ayuda">{{ sesion.mensaje() || 'Los gastos solo los ven las cuentas autorizadas.' }}</p>
+
+    @if (emuladores) {
+      <form class="prueba" (submit)="entrarDePrueba($event, mail.value)">
+        <span class="ayuda">Emuladores: entrar con un mail de prueba</span>
+        <div class="fila">
+          <input #mail id="mail-prueba" type="email" aria-label="Mail de prueba" value="acosta.nicolas96@gmail.com" />
+          <button class="boton" type="submit">Entrar de prueba</button>
+        </div>
+      </form>
+    }
+  </section>
+</main>

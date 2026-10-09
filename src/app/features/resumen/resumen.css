@@ -1,0 +1,37 @@
+.encabezado {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  align-items: end;
+  justify-content: space-between;
+}
+.encabezado p {
+  margin-top: 4px;
+}
+.ocupado {
+  opacity: 0.7;
+  pointer-events: none;
+}
+.cabecera-tabla {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--linea);
+}
+.entre {
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.texto-copia {
+  width: 100%;
+  min-height: 160px;
+  margin-top: 6px;
+  font: 12.5px var(--f-numeros);
+  border: 1px solid var(--linea);
+  border-radius: 6px;
+  background: var(--fondo);
+  padding: 8px;
+}

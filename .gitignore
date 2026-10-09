@@ -1,7 +1,29 @@
-# respaldos con datos de gastos: no van al repo
-respaldo*.json
-reparto-visa-*.json
+# Build y dependencias
+/dist
+/tmp
+/out-tsc
+/node_modules
+/.angular/cache
+/coverage
+npm-debug.log
+
+# Editores
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.history/*
+
+# Firebase
 .firebase/
 firebase-debug.log
 firestore-debug.log
-node_modules/
+ui-debug.log
+/emulador-datos
+
+# Respaldos con datos de gastos: no van al repo
+respaldo*.json
+reparto-visa-*.json
+
+# Sistema
+.DS_Store
+Thumbs.db

@@ -1,0 +1,30 @@
+<div class="fondo" (click)="cerrar.emit()">
+  <div class="ventana panel" role="dialog" aria-modal="true" aria-labelledby="titulo-impuestos"
+       (click)="$event.stopPropagation()">
+    <div class="encabezado">
+      <h2 id="titulo-impuestos">Impuestos y cargos · {{ item().fecha }}</h2>
+      <button class="boton boton-chico" (click)="cerrar.emit()" autofocus>Cerrar</button>
+    </div>
+    <table>
+      <thead>
+        <tr><th>Concepto</th><th class="num">Pesos</th><th class="num">Dólares</th></tr>
+      </thead>
+      <tbody>
+        @for (c of item().items ?? []; track $index) {
+          <tr>
+            <td>{{ c.detalle }}</td>
+            <td class="num">{{ c.pesos | pesos }}</td>
+            <td class="num">{{ c.usd ? (c.usd | dolares) : '' }}</td>
+          </tr>
+        }
+      </tbody>
+      <tfoot>
+        <tr>
+          <td>Total</td>
+          <td class="num">{{ item().pesos | pesos }}</td>
+          <td class="num">{{ item().usd ? (item().usd | dolares) : '' }}</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>

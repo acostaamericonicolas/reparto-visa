@@ -1,0 +1,64 @@
+.desplazable {
+  overflow-x: auto;
+}
+table {
+  min-width: 820px;
+}
+th {
+  position: sticky;
+  top: 0;
+  background: var(--superficie);
+}
+.fecha {
+  font-family: var(--f-numeros);
+  font-size: 13px;
+  white-space: nowrap;
+}
+.detalle .etiqueta {
+  margin-top: 3px;
+}
+.grupo td {
+  background: var(--fondo);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--texto-2);
+  letter-spacing: 0.03em;
+}
+.parte td {
+  background: var(--acento-suave);
+  border-bottom-color: transparent;
+}
+.parte.ultima td {
+  border-bottom-color: var(--linea);
+}
+.quien {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.quien select {
+  max-width: 150px;
+}
+.sub {
+  display: block;
+  font-size: 11.5px;
+  color: var(--texto-2);
+  font-family: var(--f-texto);
+}
+.monto-parte {
+  width: 120px;
+  text-align: right;
+  font-family: var(--f-numeros);
+}
+.herramientas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  justify-content: flex-end;
+}
+.diferencia {
+  font-size: 12px;
+  color: var(--aviso);
+  font-weight: 600;
+}

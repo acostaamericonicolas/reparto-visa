@@ -1,0 +1,122 @@
+@if (grupos().length) {
+  <div class="desplazable">
+    <table>
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Detalle de transacción</th>
+          <th>Cuota</th>
+          <th class="num">Pesos</th>
+          <th class="num">Dólares</th>
+          <th>De quién</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (g of grupos(); track g.tarjeta) {
+          <tr class="grupo"><td colspan="7">{{ g.tarjeta }}</td></tr>
+
+          @for (r of g.items; track r.id) {
+            @let m = moneda(r);
+            @let filtrado = personaFiltrada() && r.partes.length > 1;
+            <tr>
+              <td class="fecha">{{ r.fecha }}</td>
+              <td class="detalle">
+                {{ r.detalle }}
+                @if (r.tipo === 'impuestos') {
+                  <button class="boton-link" (click)="verImpuestos.emit(r)">Ver detalle ({{ r.items?.length }})</button>
+                }
+                <br />
+                @if (pendiente(r)) {
+                  <span class="etiqueta nuevo">Nuevo</span>
+                } @else if (r.origen) {
+                  <span class="etiqueta auto" [title]="'Reparto copiado del cierre ' + r.origen">Autocompletado</span>
+                }
+              </td>
+              <td class="fecha">{{ r.cuota }}</td>
+              <td class="num">
+                @if (filtrado && m === 'pesos') {
+                  {{ parteDe(r, 'pesos') | monto }}<span class="sub">de {{ r.pesos | monto }}</span>
+                } @else if (r.pesos) {
+                  {{ r.pesos | monto }}
+                }
+              </td>
+              <td class="num">
+                @if (filtrado && m === 'usd') {
+                  {{ parteDe(r, 'usd') | monto }}<span class="sub">de {{ r.usd | monto }}</span>
+                } @else if (r.usd) {
+                  {{ r.usd | monto }}
+                }
+              </td>
+              <td>
+                @if (dividido(r)) {
+                  <span class="ayuda">Dividido en {{ r.partes.length }}</span>
+                } @else {
+                  <span class="quien">
+                    <span class="punto" [style.background]="color(dueno(r))"></span>
+                    <select [attr.aria-label]="'Asignar ' + r.detalle" (change)="asignar(r, $event)">
+                      <option value="" [selected]="!dueno(r)">— Sin asignar —</option>
+                      @for (p of personas(); track p.id) {
+                        <option [value]="p.id" [selected]="p.id === dueno(r)">{{ p.nombre }}</option>
+                      }
+                    </select>
+                  </span>
+                }
+              </td>
+              <td>
+                <button class="boton boton-chico" (click)="alternarDivision(r)">{{ dividido(r) ? 'Unir' : 'Dividir' }}</button>
+              </td>
+            </tr>
+
+            @if (dividido(r)) {
+              @for (p of r.partes; track $index; let i = $index) {
+                <tr class="parte">
+                  <td></td>
+                  <td colspan="2">
+                    <span class="quien">
+                      <span class="punto" [style.background]="color(p.p)"></span>
+                      <select [attr.aria-label]="'Persona de la parte ' + (i + 1)" (change)="cambiarPersona(r, i, $event)">
+                        <option value="" [selected]="!p.p">— Sin asignar —</option>
+                        @for (per of personas(); track per.id) {
+                          <option [value]="per.id" [selected]="per.id === p.p">{{ per.nombre }}</option>
+                        }
+                      </select>
+                    </span>
+                  </td>
+                  <td class="num" colspan="2">
+                    <label class="ayuda">
+                      {{ m === 'usd' ? 'U$S' : '$' }}
+                      <input class="monto-parte" type="text" inputmode="decimal" [value]="p[m] | monto"
+                             [attr.aria-label]="'Monto de la parte ' + (i + 1)" (change)="cambiarMonto(r, i, $event)" />
+                    </label>
+                  </td>
+                  <td colspan="2">
+                    <button class="boton-link boton-peligro" (click)="quitar(r, i)">Quitar</button>
+                  </td>
+                </tr>
+              }
+              <tr class="parte ultima">
+                <td></td>
+                <td colspan="6">
+                  <div class="herramientas">
+                    @let d = diferencia(r);
+                    @if (d) {
+                      <span class="diferencia">{{ d > 0 ? 'Faltan' : 'Sobran' }} {{ (d > 0 ? d : -d) | monto }}</span>
+                    }
+                    <button class="boton boton-chico" (click)="agregarParte(r)">+ Agregar parte</button>
+                    <button class="boton boton-chico" (click)="partesIguales(r)">Partes iguales</button>
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+} @else {
+  <div class="vacio">
+    <strong>No hay movimientos para este filtro</strong>
+    <span>Elegí otra persona arriba o tocá “Ver todos”.</span>
+  </div>
+}

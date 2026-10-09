@@ -1,0 +1,20 @@
+@if (sesion.usuario(); as usuario) {
+  <header class="barra">
+    <div class="barra-interior">
+      <a class="marca" routerLink="/">Reparto Visa</a>
+      <nav aria-label="Secciones">
+        <a routerLink="/" [class.activo]="enResumen()">Resumen</a>
+        <a routerLink="/graficos" routerLinkActive="activo">Gráficos</a>
+        <a routerLink="/personas" routerLinkActive="activo">Personas</a>
+      </nav>
+      <div class="usuario">
+        <span class="ayuda">{{ usuario.email }}</span>
+        <button class="boton boton-chico" (click)="sesion.salir()">Salir</button>
+      </div>
+    </div>
+  </header>
+  @if (datos.error()) {
+    <div class="pagina error-global"><div class="aviso error">{{ datos.error() }}</div></div>
+  }
+}
+<router-outlet />

@@ -1,0 +1,10 @@
+<nav class="pestanas" aria-label="Resúmenes">
+  @for (p of pestanas(); track p.id) {
+    <a routerLink="/" [queryParams]="{ mes: p.id }"[attr.aria-current]="p.id === actual() ? 'page' : null">
+      <span class="nombre">{{ p.nombre }}</span>
+      <span class="estado" [class.pendiente]="p.pendientes">
+        {{ p.pendientes ? p.pendientes + ' por asignar' : 'Todo asignado' }}
+      </span>
+    </a>
+  }
+</nav>

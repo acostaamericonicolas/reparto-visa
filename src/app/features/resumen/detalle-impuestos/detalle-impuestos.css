@@ -1,0 +1,27 @@
+.fondo {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in srgb, var(--texto) 35%, transparent);
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  z-index: 10;
+}
+.ventana {
+  padding: 16px;
+  width: min(560px, 100%);
+  max-height: 85vh;
+  overflow: auto;
+  display: grid;
+  gap: 12px;
+}
+.encabezado {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+tfoot td {
+  font-weight: 600;
+  border-bottom: 0;
+}

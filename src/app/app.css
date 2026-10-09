@@ -1,0 +1,50 @@
+.barra {
+  background: var(--superficie);
+  border-bottom: 1px solid var(--linea);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+.barra-interior {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding-inline: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 20px;
+  min-height: 52px;
+}
+.marca {
+  font: 700 18px var(--f-titulo);
+  color: var(--texto);
+  text-decoration: none;
+}
+nav {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+}
+nav a {
+  padding: 15px 10px 12px;
+  color: var(--texto-2);
+  text-decoration: none;
+  border-bottom: 3px solid transparent;
+}
+nav a.activo {
+  color: var(--texto);
+  border-bottom-color: var(--acento);
+}
+.usuario {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.error-global {
+  padding-block: 12px 0;
+}
+@media (max-width: 600px) {
+  .usuario .ayuda {
+    display: none;
+  }
+}

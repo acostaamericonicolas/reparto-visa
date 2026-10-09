@@ -12,14 +12,17 @@
   </div>
 
   <section class="panel bloque">
-    <h2>A dónde fue el sueldo</h2>
-    <app-grafico [etiquetas]="etiquetas()" [series]="seriesSueldo()" descripcion="Barras apiladas con el destino del sueldo de cada mes" />
+    <h2>Ingresos, gastos y ahorro por mes</h2>
+    <p class="ayuda">Una barra por concepto en cada mes, para comparar de un vistazo.</p>
+    <app-grafico [etiquetas]="etiquetas()" [series]="seriesMeses()" [apilado]="false"
+                 descripcion="Barras con los ingresos, gastos compartidos, ahorro, tarjetas y lo libre de cada mes" />
   </section>
 
   <section class="panel bloque">
     <h2>Gasto por categoría</h2>
-    <p class="ayuda">Incluye el ahorro en dólares. Cuenta el real y, donde todavía no se cargó, el estimado.</p>
-    <app-grafico [etiquetas]="etiquetas()" [series]="seriesCategorias()" descripcion="Barras apiladas con el gasto por categoría de cada mes" />
+    <p class="ayuda">Cada categoría con una barra por mes. Incluye el ahorro en dólares. Cuenta lo pagado y, donde falta pagar, el estimado.</p>
+    <app-grafico [etiquetas]="categorias()" [series]="seriesCategorias()" [apilado]="false"
+                 descripcion="Barras con el gasto de cada categoría, una barra por mes" />
   </section>
 
   <section class="panel bloque">

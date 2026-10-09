@@ -1,15 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { GastoCompartido, MesHogar } from '../models/hogar';
 import { Item, Resumen } from '../models/resumen';
-import { calcularMes, estadoGasto, estimadoVsReal, mesAnterior, mesNuevo, resumenDelMes, totalesDeTarjeta, variacionGasto } from './hogar';
+import { calcularMes, disponiblePersona, estadoGasto, faltaPagar, montoGasto, resumenPagos, estimadoVsReal, mesAnterior, mesNuevo, resumenDelMes, totalesDeTarjeta, variacionGasto } from './hogar';
 
 const gasto = (concepto: string, categoria: string, real: number | null, extra: Partial<GastoCompartido> = {}): GastoCompartido => ({
-  id: concepto, concepto, categoria, estimado: 0, real, pagadoPor: 'pozo', recurrente: true, ...extra,
+  id: concepto, concepto, categoria, estimado: 0, real, pagadoPor: 'pozo', recurrente: true, pagos: [], pagado: real !== null, ...extra,
 });
 
 /** Octubre real: sueldos 2.8M y 1.4M, 700 USD a 1530, tarjetas 700.000 y 560.000. */
 const octubre = (): MesHogar => ({
   ingresos: { nico: 2_800_000, nanu: 1_400_000 },
+  extras: { nico: [], nanu: [] },
+  individuales: { nico: [], nanu: [] },
   usd: { planificados: 700, comprados: 700, cotizacion: 1530, pagadoPor: 'nanu' },
   gastos: [
     gasto('Luz', 'Servicios', 29_000), gasto('Mamasha', 'Otros', 50_000), gasto('Nafta', 'Transporte', 150_000),
@@ -17,6 +19,7 @@ const octubre = (): MesHogar => ({
     gasto('Sin detalle', 'Otros', 287_200),
   ],
   tarjetas: { nico: 700_000, nanu: 560_000 },
+  tarjetasPagadas: { nico: false, nanu: false },
   notas: '',
 });
 
@@ -53,6 +56,206 @@ describe('calcularMes', () => {
     m.usd.comprados = null;
     m.usd.planificados = 800;
     expect(calcularMes(m).usdEnPesos).toBe(1_224_000);
+  });
+});
+
+describe('gastos compartidos pagados con tarjeta (ej. un seguro del auto)', () => {
+  /** El seguro de 378.000 sale en la tarjeta de Nico: ya está dentro de sus 700.000. */
+  const conSeguroEnTarjeta = () => {
+    const m = octubre();
+    m.gastos[5].pagadoPor = 'tarjeta-nico';
+    return m;
+  };
+
+  it('no se cuenta dos veces: de la tarjeta solo cuenta lo personal', () => {
+    const r = calcularMes(conSeguroEnTarjeta());
+    expect(r.nico.tarjetaTotal).toBe(700_000);
+    expect(r.nico.tarjetaCompartida).toBe(378_000);
+    expect(r.nico.tarjeta).toBe(322_000);
+    expect(r.libre).toBe(515_900); // (1.913.800 − 322.000 − 560.000) / 2
+  });
+
+  it('es un gasto que adelantó Nico, aunque haya salido de su tarjeta', () => {
+    const r = calcularMes(conSeguroEnTarjeta());
+    expect(r.nico.adelantado).toBe(378_000);
+    expect(r.nico.aporte).toBe(1_962_100);
+    expect(r.nico.neto).toBe(1_584_100);
+  });
+
+  it('los aportes siguen sumando los gastos compartidos', () => {
+    const r = calcularMes(conSeguroEnTarjeta());
+    expect(r.nico.aporte + r.nanu.aporte).toBe(r.compartidos);
+  });
+
+  it('si la tarjeta informada es menor que lo compartido, lo personal no queda negativo', () => {
+    const m = conSeguroEnTarjeta();
+    m.tarjetas.nico = 100_000;
+    expect(calcularMes(m).nico.tarjeta).toBe(0);
+  });
+});
+
+describe('extras de sueldo (aguinaldo)', () => {
+  it('se suman al sueldo del mes', () => {
+    const m = octubre();
+    m.extras.nico = [{ id: 'a', concepto: 'Aguinaldo', monto: 1_400_000 }];
+    const r = calcularMes(m);
+    expect(r.nico).toMatchObject({ sueldo: 2_800_000, extras: 1_400_000, ingreso: 4_200_000 });
+    expect(r.ingresos).toBe(5_600_000);
+    expect(r.libre).toBe(1_026_900); // (5.600.000 − 2.286.200 − 1.260.000) / 2
+  });
+
+  it('los aportes siguen sumando los gastos compartidos', () => {
+    const m = octubre();
+    m.extras.nanu = [{ id: 'a', concepto: 'Aguinaldo', monto: 700_000 }];
+    const r = calcularMes(m);
+    expect(r.nico.aporte + r.nanu.aporte).toBe(r.compartidos);
+  });
+
+  it('no pasan al mes siguiente', () => {
+    const m = octubre();
+    m.extras.nico = [{ id: 'a', concepto: 'Aguinaldo', monto: 1_400_000 }];
+    expect(mesNuevo(m, () => 'n').extras).toEqual({ nico: [], nanu: [] });
+  });
+});
+
+describe('disponiblePersona', () => {
+  const conGastos = () => {
+    const m = octubre();
+    m.individuales.nico = [
+      { id: '1', fecha: '2026-10-03', concepto: 'Cena', categoria: 'Salidas', monto: 60_000 },
+      { id: '2', fecha: '2026-10-05', concepto: 'Cine', categoria: 'Salidas', monto: 20_000 },
+      { id: '3', fecha: '2026-10-07', concepto: 'Farmacia', categoria: 'Salud', monto: 30_000 },
+    ];
+    return m;
+  };
+
+  it('a lo libre le resta lo que gastó', () => {
+    const d = disponiblePersona(conGastos(), 'nico');
+    expect(d).toMatchObject({ libre: 326_900, gastado: 110_000, queda: 216_900 });
+  });
+
+  it('agrupa por categoría, de la que más gastó a la que menos', () => {
+    expect(disponiblePersona(conGastos(), 'nico').porCategoria).toEqual([
+      { categoria: 'Salidas', monto: 80_000 },
+      { categoria: 'Salud', monto: 30_000 },
+    ]);
+  });
+
+  it('cada uno ve lo suyo y puede quedar en negativo si se pasa', () => {
+    const m = conGastos();
+    expect(disponiblePersona(m, 'nanu').gastado).toBe(0);
+    m.individuales.nanu = [{ id: '9', fecha: '2026-10-01', concepto: 'Compra', categoria: 'Otros', monto: 400_000 }];
+    expect(disponiblePersona(m, 'nanu').queda).toBe(-73_100);
+  });
+
+  it('los gastos propios no pasan al mes siguiente', () => {
+    expect(mesNuevo(conGastos(), () => 'n').individuales).toEqual({ nico: [], nanu: [] });
+  });
+});
+
+describe('pagos en partes (nafta, súper…)', () => {
+  const pago = (id: string, monto: number, pagadoPor: GastoCompartido['pagadoPor']) => ({ id, fecha: '2026-10-05', monto, pagadoPor });
+  /** La nafta se estima en 150.000 y por ahora se pagó 90.000 en dos veces: 50.000 Nico y 40.000 Nanu. */
+  const nafta = (extra: Partial<GastoCompartido> = {}) =>
+    gasto('Nafta', 'Transporte', 90_000, {
+      estimado: 150_000,
+      pagado: false,
+      pagos: [pago('1', 50_000, 'nico'), pago('2', 40_000, 'nanu')],
+      ...extra,
+    });
+
+  it('mientras no se cierra, el mes cuenta el estimado y no lo pagado hasta ahora', () => {
+    expect(montoGasto(nafta())).toBe(150_000);
+    expect(faltaPagar(nafta())).toBe(60_000);
+  });
+
+  it('si ya se pasó del estimado, cuenta lo pagado', () => {
+    const g = nafta({ real: 170_000 });
+    expect(montoGasto(g)).toBe(170_000);
+    expect(faltaPagar(g)).toBe(0);
+  });
+
+  it('al darlo por pagado vale lo realmente pagado', () => {
+    const g = nafta({ pagado: true });
+    expect(montoGasto(g)).toBe(90_000);
+    expect(faltaPagar(g)).toBe(0);
+  });
+
+  it('cada parte la adelanta quien la pagó', () => {
+    const m = octubre();
+    m.gastos = [nafta()];
+    m.usd.pagadoPor = 'pozo';
+    const r = calcularMes(m);
+    expect(r.nico.adelantado).toBe(50_000);
+    expect(r.nanu.adelantado).toBe(40_000);
+  });
+
+  it('un pago con tarjeta no se cuenta dos veces', () => {
+    const m = octubre();
+    m.gastos = [nafta({ pagos: [pago('1', 50_000, 'tarjeta-nico')] })];
+    m.usd.pagadoPor = 'pozo';
+    const r = calcularMes(m);
+    expect(r.nico.tarjetaCompartida).toBe(50_000);
+    expect(r.nico.tarjeta).toBe(650_000);
+  });
+
+  it('mientras está abierto, no se marca ahorro por quedar por debajo del estimado', () => {
+    expect(estadoGasto(nafta())).toEqual({ pasado: false, diferencia: 0 });
+    expect(estadoGasto(nafta({ pagado: true }))).toEqual({ pasado: false, diferencia: -60_000 });
+  });
+});
+
+describe('resumenPagos: qué falta pagar', () => {
+  const abierto = () => {
+    const m = octubre();
+    m.gastos = [
+      gasto('Luz', 'Servicios', 29_000), // ya pagada
+      gasto('Nafta', 'Transporte', 90_000, { estimado: 150_000, pagado: false }),
+      gasto('Súper', 'Comida', null, { estimado: 300_000 }),
+    ];
+    m.usd.comprados = null; // los dólares todavía no se compraron
+    return m;
+  };
+
+  it('suma lo que falta de cada gasto, sin contar los ya pagados', () => {
+    const r = resumenPagos(abierto());
+    expect(r.gastos).toEqual([
+      { id: 'Nafta', concepto: 'Nafta', falta: 60_000 },
+      { id: 'Súper', concepto: 'Súper', falta: 300_000 },
+    ]);
+    expect(r.faltaGastos).toBe(360_000);
+  });
+
+  it('los dólares planificados sin comprar también faltan', () => {
+    const r = resumenPagos(abierto());
+    expect(r.usd).toEqual({ falta: 700, faltaPesos: 1_071_000 });
+    expect(r.faltaCompartido).toBe(1_431_000);
+  });
+
+  it('con los dólares comprados ya no faltan y cuentan como pagados', () => {
+    const m = abierto();
+    m.usd.comprados = 700;
+    const r = resumenPagos(m);
+    expect(r.usd.falta).toBe(0);
+    expect(r.faltaCompartido).toBe(360_000);
+    expect(r.pagadoCompartido).toBe(29_000 + 90_000 + 1_071_000);
+  });
+
+  it('la tarjeta falta hasta que se marca como pagada', () => {
+    const m = abierto();
+    expect(resumenPagos(m).faltaTarjetas).toBe(1_260_000);
+    m.tarjetasPagadas.nico = true;
+    const r = resumenPagos(m);
+    expect(r.faltaTarjetas).toBe(560_000);
+    expect(r.tarjetas.nico).toEqual({ monto: 700_000, pagada: true });
+  });
+
+  it('un mes nuevo arranca sin pagos ni tarjetas pagadas', () => {
+    const m = abierto();
+    m.tarjetasPagadas.nico = true;
+    const n = mesNuevo(m, () => 'n');
+    expect(n.tarjetasPagadas).toEqual({ nico: false, nanu: false });
+    expect(n.gastos.every((g) => !g.pagado && g.pagos.length === 0 && g.real === null)).toBe(true);
   });
 });
 

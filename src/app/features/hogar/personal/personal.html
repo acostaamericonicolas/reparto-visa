@@ -1,0 +1,57 @@
+<div class="selector" role="group" aria-label="Persona">
+  @for (q of quienes; track q) {
+    <button class="boton" type="button" [attr.aria-pressed]="quien() === q" (click)="quien.set(q)">{{ nombres()[q] }}</button>
+  }
+</div>
+
+<div class="indicadores">
+  <div class="indicador"><span class="ayuda">Plata libre del mes</span><strong class="num">{{ disponible().libre | pesos }}</strong></div>
+  <div class="indicador"><span class="ayuda">Gastaste</span><strong class="num">{{ disponible().gastado | pesos }}</strong></div>
+  <div class="indicador destacado" [class.negativo]="disponible().queda < 0">
+    <span class="ayuda">Te queda</span><strong class="num">{{ disponible().queda | pesos }}</strong>
+  </div>
+</div>
+
+<div class="barra" role="img" [attr.aria-label]="usado().toFixed(0) + '% de lo libre ya gastado'">
+  <span [style.width.%]="usado()" [class.pasado]="disponible().queda < 0"></span>
+</div>
+<p class="ayuda">
+  Lo libre ya tiene descontada la tarjeta ({{ tarjeta() | pesos }} de lo personal) y lo que se pone para los gastos compartidos.
+  Acá anotá lo demás: efectivo, débito, transferencias, salidas.
+</p>
+
+<section class="panel bloque">
+  <div class="titulo">
+    <h2>Gastos de {{ nombres()[quien()] }}</h2>
+    <button class="boton" type="button" (click)="agregar()">+ Agregar gasto</button>
+  </div>
+
+  @for (g of gastos(); track g.id) {
+    <div class="gasto">
+      <input type="date" aria-label="Fecha" [value]="g.fecha" (change)="fecha(g.id, $event)" />
+      <input type="text" class="concepto" placeholder="Concepto" aria-label="Concepto" [value]="g.concepto" (change)="concepto(g.id, $event)" />
+      <select aria-label="Categoría" (change)="categoria(g.id, $event)">
+        @for (c of opciones(g); track c) { <option [value]="c" [selected]="c === g.categoria">{{ c }}</option> }
+      </select>
+      <input type="text" inputmode="decimal" placeholder="Monto" aria-label="Monto" [value]="g.monto || ''" (change)="monto(g.id, $event)" />
+      <button class="boton boton-chico boton-peligro" type="button" aria-label="Quitar gasto" (click)="quitar(g.id)">×</button>
+    </div>
+  } @empty {
+    <p class="ayuda">Todavía no anotaste gastos este mes.</p>
+  }
+</section>
+
+@if (disponible().porCategoria.length) {
+  <section class="panel bloque">
+    <h2>En qué gastaste</h2>
+    <ul class="categorias">
+      @for (c of disponible().porCategoria; track c.categoria) {
+        <li>
+          <span class="nombre">{{ c.categoria }}</span>
+          <span class="relleno"><span [style.width.%]="(c.monto / disponible().gastado) * 100"></span></span>
+          <span class="num">{{ c.monto | pesos }}</span>
+        </li>
+      }
+    </ul>
+  </section>
+}

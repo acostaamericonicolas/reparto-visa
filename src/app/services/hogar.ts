@@ -143,10 +143,15 @@ export class Hogar {
   async restaurar(respaldo: Partial<RespaldoHogar>): Promise<number> {
     if (respaldo.formato !== 'hogar-respaldo' || !respaldo.meses) throw new Error('Ese archivo no es un respaldo de Gastos del hogar.');
     const lote = writeBatch(this.firebase.db);
-    if (respaldo.config) lote.set(doc(this.firebase.db, 'hogar', 'config'), normalizarConfig(respaldo.config));
-    for (const [id, m] of Object.entries(respaldo.meses)) lote.set(this.docMes(id), normalizarMes(m));
+    const config = respaldo.config ? normalizarConfig(respaldo.config) : null;
+    const meses = Object.fromEntries(Object.entries(respaldo.meses).map(([id, m]) => [id, normalizarMes(m)]));
+    if (config) lote.set(doc(this.firebase.db, 'hogar', 'config'), config);
+    for (const [id, m] of Object.entries(meses)) lote.set(this.docMes(id), m);
+    // Lo que se escribe desde acá no vuelve como cambio de Firestore (es un cambio propio), así que se muestra ya.
+    if (config) this.config.set(config);
+    this.meses.update((todos) => ({ ...todos, ...meses }));
     await this.encolar(() => lote.commit());
-    return Object.keys(respaldo.meses).length;
+    return Object.keys(meses).length;
   }
 
   private docMes = (id: string) => doc(this.firebase.db, 'hogar', PREFIJO_MES + id);
@@ -186,6 +191,7 @@ function normalizarConfig(c: Partial<ConfigHogar>): ConfigHogar {
 function normalizarMes(m: Partial<MesHogar>): MesHogar {
   return {
     ingresos: { nico: m.ingresos?.nico ?? 0, nanu: m.ingresos?.nanu ?? 0 },
+    extras: { nico: m.extras?.nico ?? [], nanu: m.extras?.nanu ?? [] },
     usd: {
       planificados: m.usd?.planificados ?? 0,
       comprados: m.usd?.comprados ?? null,
@@ -198,9 +204,14 @@ function normalizarMes(m: Partial<MesHogar>): MesHogar {
       estimado: g.estimado ?? 0,
       categoria: g.categoria || 'Otros',
       recurrente: g.recurrente ?? true,
+      pagos: g.pagos ?? [],
+      // Los gastos de antes, que ya tenían un real cargado, se consideran pagados.
+      pagado: g.pagado ?? (g.real !== null && g.real !== undefined),
     })),
     tarjetas: { nico: m.tarjetas?.nico ?? 0, nanu: m.tarjetas?.nanu ?? 0 },
+    tarjetasPagadas: { nico: m.tarjetasPagadas?.nico ?? false, nanu: m.tarjetasPagadas?.nanu ?? false },
     tarjetasOrigen: m.tarjetasOrigen,
+    individuales: { nico: m.individuales?.nico ?? [], nanu: m.individuales?.nanu ?? [] },
     notas: m.notas ?? '',
   };
 }

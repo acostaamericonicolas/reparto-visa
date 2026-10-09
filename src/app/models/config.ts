@@ -10,6 +10,8 @@ export interface Config {
   personas: Persona[];
   /** Nombre de la tarjeta tal como sale en el resumen → id de persona. */
   tarjetas: Record<string, string>;
+  /** Alias para transferir, que va al final del detalle que se le manda a cada persona. */
+  alias?: string;
 }
 
 /** Archivo de respaldo que se descarga o restaura desde la app. */

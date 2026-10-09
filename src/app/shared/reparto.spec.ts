@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Item, Resumen } from '../models/resumen';
 import { ajustarParte, arrastrar, dividir, falta, quitarParte, totalesPorPersona } from './reparto';
 import { montoIngresado, repartoIgual } from './montos';
+import { detalleDePersona } from './detalle-persona';
 
 const item = (pesos: number, extra: Partial<Item> = {}): Item => ({
   id: 'r0', fecha: '01.01.26', comp: '1*', detalle: 'COMPRA', cuota: '', pesos, usd: 0, tarjeta: 'T', partes: [], ...extra,
@@ -90,5 +91,19 @@ describe('totales', () => {
     expect(t.get('ana')).toEqual({ pesos: 60, usd: 0, items: 1 });
     expect(t.get('')).toEqual({ pesos: 90, usd: 0, items: 2 });
     expect(falta(r1).pesos).toBe(40);
+  });
+});
+
+describe('detalleDePersona', () => {
+  it('agrega el vencimiento menos 2 días y el alias al final', () => {
+    const r = item(100, { cuota: '04/09', partes: [{ p: 'eli', pesos: 100, usd: 0 }] });
+    const res: Resumen = { meta: { id: '2026-10-01', cierre: '01 Oct 26', vence: '14 Oct 26', saldo: 0, saldoUsd: 0 }, rows: [r] };
+    const texto = detalleDePersona(res, { id: 'eli', nombre: 'Eli' }, ' mi.alias ');
+    expect(texto.split('\n').slice(-4)).toEqual(['Total: $ 100,00', '', 'Vence el 12/10', 'Alias: mi.alias']);
+  });
+
+  it('cruza de mes y omite el alias si no hay', () => {
+    const res: Resumen = { meta: { id: '2026-08-27', cierre: '27 Ago 26', vence: '01 Sep 26', saldo: 0, saldoUsd: 0 }, rows: [] };
+    expect(detalleDePersona(res, { id: 'eli', nombre: 'Eli' }).split('\n').at(-1)).toBe('Vence el 30/08');
   });
 });

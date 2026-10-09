@@ -1,4 +1,5 @@
 import { Component, ElementRef, computed, inject, input, signal, viewChild } from '@angular/core';
+import { FormField, form } from '@angular/forms/signals';
 import { Router } from '@angular/router';
 import { Persona } from '../../models/config';
 import { Item } from '../../models/resumen';
@@ -19,7 +20,7 @@ interface Estado {
 
 @Component({
   selector: 'app-resumen',
-  imports: [PestanasMeses, TotalesPersonas, TablaItems, DetalleImpuestos, PesosPipe, DolaresPipe],
+  imports: [PestanasMeses, TotalesPersonas, TablaItems, DetalleImpuestos, PesosPipe, DolaresPipe, FormField],
   templateUrl: './resumen.html',
   styleUrl: './resumen.css',
 })
@@ -67,6 +68,24 @@ export class Resumen {
     setTimeout(() => this.movimientos()?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' }));
   }
 
+  // --- Alias que va al final del detalle de cada persona ---
+  protected editandoAlias = signal(false);
+  protected nuevoAlias = signal({ alias: '' });
+  protected fAlias = form(this.nuevoAlias);
+
+  protected editarAlias() {
+    this.nuevoAlias.set({ alias: this.datos.config().alias ?? '' });
+    this.editandoAlias.set(true);
+  }
+
+  protected guardarAlias(evento: Event) {
+    evento.preventDefault();
+    const alias = this.nuevoAlias().alias.trim();
+    this.datos.guardarConfig({ ...this.datos.config(), alias });
+    this.editandoAlias.set(false);
+    this.estado.set({ texto: alias ? `Alias guardado: ${alias}.` : 'Alias borrado: el detalle ya no lo incluye.', tipo: '' });
+  }
+
   protected async importar(evento: Event) {
     const campo = evento.target as HTMLInputElement;
     const archivo = campo.files?.[0];
@@ -107,7 +126,7 @@ export class Resumen {
   protected async copiar(persona: Persona) {
     const res = this.resumen();
     if (!res) return;
-    const texto = detalleDePersona(res, persona);
+    const texto = detalleDePersona(res, persona, this.datos.config().alias);
     // Copiar el detalle es para mandárselo: queda marcado "A" (avisado). Se puede desmarcar a mano.
     if (!res.estados?.[persona.id]?.avisado) this.datos.cambiarEstado(res.meta.id, persona.id, 'avisado', true);
     try {

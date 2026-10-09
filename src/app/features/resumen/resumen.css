@@ -8,6 +8,17 @@
 .encabezado p {
   margin-top: 4px;
 }
+/* Alias e importar: a la derecha del título; en el celular bajan debajo */
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.acciones input {
+  min-width: 0;
+  width: 200px;
+}
 .ocupado {
   opacity: 0.7;
   pointer-events: none;

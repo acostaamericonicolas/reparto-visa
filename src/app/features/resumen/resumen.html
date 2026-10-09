@@ -9,10 +9,24 @@
         </p>
       }
     </div>
-    <label class="boton boton-primario" [class.ocupado]="importando()">
-      {{ importando() ? 'Importando…' : 'Importar PDF del resumen' }}
-      <input type="file" accept="application/pdf" (change)="importar($event)" [disabled]="importando()" hidden />
-    </label>
+    <div class="acciones">
+      @if (editandoAlias()) {
+        <form class="fila" novalidate (submit)="guardarAlias($event)">
+          <input type="text" id="alias" placeholder="Alias para transferir" aria-label="Alias para transferir"
+                 autocomplete="off" [formField]="fAlias.alias" />
+          <button class="boton" type="submit">Guardar</button>
+          <button class="boton-link" type="button" (click)="editandoAlias.set(false)">Cancelar</button>
+        </form>
+      } @else {
+        <button class="boton" type="button" (click)="editarAlias()" title="Se agrega al final del detalle que copiás para cada persona">
+          {{ datos.config().alias ? 'Alias: ' + datos.config().alias : 'Agregar alias' }}
+        </button>
+      }
+      <label class="boton boton-primario" [class.ocupado]="importando()">
+        {{ importando() ? 'Importando…' : 'Importar PDF del resumen' }}
+        <input type="file" accept="application/pdf" (change)="importar($event)" [disabled]="importando()" hidden />
+      </label>
+    </div>
   </header>
 
   @if (lista().length) {

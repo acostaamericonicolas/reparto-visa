@@ -1,9 +1,16 @@
 import { Persona } from '../models/config';
 import { Resumen } from '../models/resumen';
+import { diaMesAntes, fechaIso } from './fechas';
 import { formatoMonto, r2 } from './montos';
 
-/** Texto con los ítems y el total de una persona, para mandar por WhatsApp. */
-export function detalleDePersona(res: Resumen, persona: Persona): string {
+/** Días antes del vencimiento de la tarjeta que se le pide a cada persona que pague. */
+export const DIAS_ANTES_DEL_VENCIMIENTO = 2;
+
+/**
+ * Texto con los ítems y el total de una persona, para mandar por WhatsApp.
+ * Al final: hasta cuándo pagar (vencimiento menos 2 días) y el alias, si está cargado.
+ */
+export function detalleDePersona(res: Resumen, persona: Persona, alias = ''): string {
   const lineas = [`Resumen Visa · cierre ${res.meta.cierre} · ${persona.nombre}`, ''];
   let pesos = 0;
   let usd = 0;
@@ -19,5 +26,12 @@ export function detalleDePersona(res: Resumen, persona: Persona): string {
     }
   }
   lineas.push('', `Total: $ ${formatoMonto(pesos)}${usd ? ` + U$S ${formatoMonto(usd)}` : ''}`);
+
+  const vence = fechaIso(res.meta.vence);
+  const pie = [
+    vence ? `Vence el ${diaMesAntes(vence, DIAS_ANTES_DEL_VENCIMIENTO)}` : '',
+    alias.trim() ? `Alias: ${alias.trim()}` : '',
+  ].filter(Boolean);
+  if (pie.length) lineas.push('', ...pie);
   return lineas.join('\n');
 }

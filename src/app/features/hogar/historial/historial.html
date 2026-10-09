@@ -1,0 +1,48 @@
+@if (!meses().length) {
+  <section class="panel vacio">
+    <strong>Todavía no hay meses cargados</strong>
+    <span>Creá el primer mes desde la pestaña Mes.</span>
+  </section>
+} @else {
+  <div class="indicadores">
+    <div class="indicador"><span class="ayuda">Meses registrados</span><strong class="num">{{ meses().length }}</strong></div>
+    <div class="indicador"><span class="ayuda">USD ahorrados en total</span><strong class="num">US$ {{ totalUsd() }}</strong></div>
+    <div class="indicador"><span class="ayuda">Gasto compartido promedio</span><strong class="num">{{ promedioCompartidos() | pesos }}</strong></div>
+    <div class="indicador destacado"><span class="ayuda">Libre promedio c/u</span><strong class="num">{{ promedioLibre() | pesos }}</strong></div>
+  </div>
+
+  <section class="panel bloque">
+    <h2>A dónde fue el sueldo</h2>
+    <app-grafico [etiquetas]="etiquetas()" [series]="seriesSueldo()" descripcion="Barras apiladas con el destino del sueldo de cada mes" />
+  </section>
+
+  <section class="panel bloque">
+    <h2>Gasto por categoría</h2>
+    <p class="ayuda">Incluye el ahorro en dólares. Cuenta el real y, donde todavía no se cargó, el estimado.</p>
+    <app-grafico [etiquetas]="etiquetas()" [series]="seriesCategorias()" descripcion="Barras apiladas con el gasto por categoría de cada mes" />
+  </section>
+
+  <section class="panel bloque">
+    <h2>Detalle por mes</h2>
+    <div class="desplazable">
+      <table>
+        <thead>
+          <tr><th>Mes</th><th class="num">Ingresos</th><th class="num">Compartidos</th><th class="num">USD</th><th class="num">Cotiz.</th><th class="num">Tarjetas</th><th class="num">Libre c/u</th></tr>
+        </thead>
+        <tbody>
+          @for (x of tabla(); track x.id) {
+            <tr>
+              <td>{{ x.nombre }}</td>
+              <td class="num">{{ x.r.ingresos | pesos }}</td>
+              <td class="num">{{ x.r.compartidos | pesos }}</td>
+              <td class="num">{{ x.r.usd }}</td>
+              <td class="num">{{ x.m.usd.cotizacion }}</td>
+              <td class="num">{{ x.r.nico.tarjeta + x.r.nanu.tarjeta | pesos }}</td>
+              <td class="num">{{ x.r.libre | pesos }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+}

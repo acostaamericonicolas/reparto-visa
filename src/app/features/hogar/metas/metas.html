@@ -1,0 +1,64 @@
+<div class="indicadores">
+  <div class="indicador destacado"><span class="ayuda">Ahorrado en total</span><strong class="num">{{ resumen().total | dolares }}</strong></div>
+  <div class="indicador"><span class="ayuda">Ritmo (últimos 3 meses)</span><strong class="num">{{ resumen().promedioMensual | dolares }} por mes</strong></div>
+</div>
+
+@if (sinObjetivos()) {
+  <p class="aviso">Definí cuántos dólares necesitan para cada meta y se calcula cuánto falta y en cuánto tiempo llegan.</p>
+}
+
+@for (p of resumen().metas; track p.meta.id; let i = $index) {
+  <section class="panel bloque">
+    <div class="fila">
+      <input type="text" class="crece titulo" aria-label="Nombre de la meta" [value]="p.meta.nombre" (change)="nombre(p.meta.id, $event)" />
+      @if (i > 0) { <button class="boton boton-chico" type="button" title="Que se llene antes" (click)="subir(i)">↑ Prioridad</button> }
+      <button class="boton boton-chico boton-peligro" type="button" aria-label="Quitar meta" (click)="quitar(p.meta.id)">Quitar</button>
+    </div>
+
+    <div class="dos">
+      <label>Objetivo en dólares
+        <input type="text" inputmode="decimal" placeholder="0" [value]="p.meta.objetivoUsd || ''" (change)="objetivo(p.meta.id, $event)" />
+      </label>
+      <label>Para cuándo (opcional)
+        <input type="month" [value]="p.meta.hasta" (change)="hasta(p.meta.id, $event)" />
+      </label>
+    </div>
+
+    @if (p.meta.objetivoUsd > 0) {
+      <div class="progreso" role="img" [attr.aria-label]="p.porcentaje.toFixed(0) + '% de la meta'">
+        <span [style.width.%]="p.porcentaje" [class.completa]="p.completa"></span>
+      </div>
+      <p class="datos">
+        <span><strong class="num">{{ p.ahorrado | dolares }}</strong> de <span class="num">{{ p.meta.objetivoUsd | dolares }}</span> ({{ p.porcentaje.toFixed(1).replace('.', ',') }}%)</span>
+        @if (p.completa) { <span class="baja">¡Meta cumplida!</span> } @else { <span>Faltan <span class="num">{{ p.falta | dolares }}</span></span> }
+      </p>
+      @if (!p.completa) {
+        @if (p.mesesAlRitmo !== null) {
+          <p class="ayuda">Al ritmo actual, unos {{ p.mesesAlRitmo }} meses ({{ (p.mesesAlRitmo / 12).toFixed(1).replace('.', ',') }} años).</p>
+        }
+        @if (p.necesarioPorMes !== null) {
+          <p class="ayuda">Para llegar en la fecha elegida hay que ahorrar <span class="num">{{ p.necesarioPorMes | dolares }}</span> por mes.</p>
+        } @else if (p.mesesRestantes === 0) {
+          <p class="ayuda sube">La fecha elegida ya pasó.</p>
+        }
+      }
+    }
+  </section>
+}
+
+<div class="fila"><button class="boton" type="button" (click)="agregar()">+ Agregar meta</button></div>
+
+@if (resumen().excedente > 0 && !sinObjetivos()) {
+  <p class="aviso">Después de completar todas las metas sobran <strong class="num">{{ resumen().excedente | dolares }}</strong>.</p>
+}
+
+<section class="panel bloque">
+  <h2>Ahorro anterior</h2>
+  <label>Dólares que ya tenían antes de cargar los meses en esta app
+    <input type="text" inputmode="decimal" placeholder="0" [value]="hogar.config().ahorroInicialUsd || ''" (change)="ahorroInicial($event)" />
+  </label>
+  <p class="ayuda">
+    Se suma a los dólares comprados en cada mes. Solo cuentan los dólares comprados (el campo "USD comprados" de cada mes), no los planificados.
+    Las metas se llenan en orden: lo ahorrado completa primero la de arriba.
+  </p>
+</section>

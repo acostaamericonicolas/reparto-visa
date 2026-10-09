@@ -1,0 +1,90 @@
+<div class="indicadores">
+  <div class="indicador"><span class="ayuda">Ingresos del mes</span><strong class="num">{{ r().ingresos | pesos }}</strong></div>
+  <div class="indicador"><span class="ayuda">Gastos compartidos</span><strong class="num">{{ r().compartidos | pesos }}</strong></div>
+  <div class="indicador"><span class="ayuda">Ahorro en USD</span><strong class="num">US$ {{ r().usd }}</strong></div>
+  <div class="indicador destacado"><span class="ayuda">Libre para cada uno</span><strong class="num">{{ r().libre | pesos }}</strong></div>
+</div>
+
+<section class="panel bloque">
+  <h2>Cuánto pone cada uno</h2>
+  <div class="desplazable">
+    <table>
+      <thead>
+        <tr>
+          <th></th>
+          @for (q of quienes; track q) { <th class="num">{{ nombres()[q] }}</th> }
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Sueldo</td>@for (q of quienes; track q) { <td class="num">{{ r()[q].ingreso | pesos }}</td> }</tr>
+        <tr><td>Tarjeta</td>@for (q of quienes; track q) { <td class="num">− {{ r()[q].tarjeta | pesos }}</td> }</tr>
+        <tr><td>Libre</td>@for (q of quienes; track q) { <td class="num">− {{ r()[q].libre | pesos }}</td> }</tr>
+        <tr class="fuerte"><td>Aporte a gastos compartidos</td>@for (q of quienes; track q) { <td class="num">{{ r()[q].aporte | pesos }}</td> }</tr>
+        <tr><td>Ya adelantó</td>@for (q of quienes; track q) { <td class="num">− {{ r()[q].adelantado | pesos }}</td> }</tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td>Transferir a la cuenta común</td>
+          @for (q of quienes; track q) { <td class="num" [class.recibe]="r()[q].neto < 0">{{ r()[q].neto | pesos }}</td> }
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+  <p class="ayuda">
+    Aporte neto = su parte de los gastos − lo que ya pagó de su bolsillo.
+    @for (q of quienes; track q) {
+      @if (r()[q].neto < 0) { A {{ nombres()[q] }} le corresponde recibir {{ -r()[q].neto | pesos }}. }
+    }
+  </p>
+</section>
+
+<section class="panel bloque">
+  <h2>Estimado vs. real</h2>
+  <div class="desplazable">
+    <table>
+      <thead><tr><th>Categoría</th><th class="num">Estimado</th><th class="num">Real</th><th class="num">Dif.</th></tr></thead>
+      <tbody>
+        @for (f of evv().filas; track f.nombre) {
+          <tr [class.pasado]="f.pasado">
+            <td>{{ f.nombre }}</td>
+            <td class="num">{{ f.estimado ? (f.estimado | pesos) : '–' }}</td>
+            <td class="num">{{ f.real ? (f.real | pesos) : '–' }}</td>
+            <td class="num">{{ f.estimado ? (f.diferencia | pesos) : '' }}</td>
+          </tr>
+        }
+      </tbody>
+      <tfoot>
+        <tr [class.pasado]="hayEstimados() && diferenciaTotal() > 0">
+          <td>Total</td>
+          <td class="num">{{ evv().estimado | pesos }}</td>
+          <td class="num">{{ evv().real | pesos }}</td>
+          <td class="num">{{ hayEstimados() ? (diferenciaTotal() | pesos) : '' }}</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+  @if (pasadas().length) { <p class="aviso advertencia">Categorías pasadas: {{ pasadas().join(', ') }}.</p> }
+  @if (evv().pendientes) {
+    <p class="ayuda">{{ evv().pendientes }} gasto{{ evv().pendientes > 1 ? 's' : '' }} con estimado y sin real cargado todavía.</p>
+  }
+  <app-grafico [etiquetas]="etiquetas()" [series]="series()" [apilado]="false" descripcion="Barras con el estimado y el real de cada categoría" />
+</section>
+
+<section class="panel bloque">
+  <h2>A dónde va el sueldo</h2>
+  <div class="distribucion" role="img" aria-label="Distribución del sueldo">
+    @for (p of distribucion(); track p.nombre) {
+      <span [style.width.%]="p.porcentaje" [style.background]="p.color"></span>
+    }
+  </div>
+  <ul class="leyenda">
+    @for (p of distribucion(); track p.nombre) {
+      <li>
+        <span class="punto" [style.background]="p.color"></span>
+        <span class="crece">{{ p.nombre }}</span>
+        <span class="num">{{ p.monto | pesos }}</span>
+        <span class="num porcentaje">{{ p.porcentaje.toFixed(1).replace('.', ',') }}%</span>
+      </li>
+    }
+  </ul>
+</section>

@@ -1,0 +1,37 @@
+<div class="fila">
+  <button class="boton boton-chico" type="button" (click)="consultar()" [disabled]="cargando()">
+    {{ cargando() ? 'Consultando…' : 'Comparar cotizaciones' }}
+  </button>
+</div>
+
+@if (error()) { <p class="error">{{ error() }}</p> }
+
+@if (lista(); as l) {
+  <div class="desplazable">
+    <table>
+      <thead>
+        <tr><th>Dónde</th><th>Tipo</th><th class="num">Precio</th><th class="num">vs. tuya</th><th></th></tr>
+      </thead>
+      <tbody>
+        @for (c of l; track c.nombre + c.tipo) {
+          <tr>
+            <td>{{ c.nombre }}</td>
+            <td class="ayuda">{{ tipo(c) }}</td>
+            <td class="num">{{ c.precio | pesos }}</td>
+            <td class="num" [class.baja]="(diferencia(c.precio) ?? 0) < 0" [class.sube]="(diferencia(c.precio) ?? 0) > 0">
+              @if (diferencia(c.precio) !== null) {
+                {{ diferencia(c.precio)! > 0 ? '+' : '' }}{{ diferencia(c.precio)!.toFixed(1).replace('.', ',') }}%
+              }
+            </td>
+            <td><button class="boton boton-chico" type="button" (click)="usar(c.precio)">Usar</button></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  <p class="ayuda">
+    Las 10 opciones más baratas, con comisión incluida y actualizadas en los últimos 3 días. Fuente: CriptoYa.
+    Ualá no figura en esa fuente: cargá lo que te cobra en "Cotización" y la columna "vs. tuya" lo compara.
+    USDT y USDC son stablecoins, no dólar billete. Son precios de referencia: confirmá el precio final en la app antes de comprar.
+  </p>
+}

@@ -1,0 +1,59 @@
+@if (mensaje()) { <div class="aviso">{{ mensaje() }}</div> }
+@if (error()) { <div class="aviso error">{{ error() }}</div> }
+
+<section class="panel bloque">
+  <h2>Personas</h2>
+  <p class="ayuda">
+    Quién es cada uno en la tarjeta. De ahí se toma el total de cada tarjeta; lo de otras personas no se suma.
+  </p>
+  @for (q of quienes; track q) {
+    <label class="fila">
+      <span class="etiqueta-fija">{{ q === 'nico' ? 'Persona 1' : 'Persona 2' }}</span>
+      <select class="crece" (change)="elegirPersona(q, $event)">
+        <option value="" [selected]="!elegida(q)">— elegir —</option>
+        @for (p of datos.personas(); track p.id) {
+          <option [value]="p.id" [selected]="p.id === elegida(q)">{{ p.nombre }}</option>
+        }
+      </select>
+    </label>
+  }
+  @if (!hogar.personas()) {
+    <p class="error">Elegí dos personas distintas.</p>
+  }
+  <p class="ayuda">Las personas se agregan y renombran en la sección Personas de la app.</p>
+</section>
+
+<section class="panel bloque">
+  <h2>Categorías</h2>
+  <label>Separadas por coma
+    <input type="text" [value]="categorias()" (change)="guardarCategorias($event)" />
+  </label>
+  <p class="ayuda">Se usan para clasificar los gastos compartidos. Si borrás una, los gastos que ya la tenían la conservan.</p>
+</section>
+
+<section class="panel bloque">
+  <h2>Respaldo</h2>
+  <p class="ayuda">
+    Descargá una copia de todos los meses del hogar o restaurala desde un archivo. Restaurar reemplaza los meses que
+    vengan en el archivo.
+  </p>
+  <div class="fila">
+    <button class="boton" type="button" (click)="descargarRespaldo()">Descargar respaldo</button>
+    <label class="boton">
+      Restaurar respaldo
+      <input type="file" accept="application/json,.json" (change)="restaurar($event)" hidden />
+    </label>
+  </div>
+</section>
+
+@if (existe()) {
+  <section class="panel bloque">
+    <h2>Borrar {{ nombreMes() }}</h2>
+    <p class="ayuda">Borra todos los datos de este mes del hogar. No toca los resúmenes de la tarjeta.</p>
+    <div class="fila">
+      <button class="boton boton-peligro" type="button" (click)="borrar()">
+        {{ confirmando() ? '¿Seguro? Tocá de nuevo' : 'Borrar este mes' }}
+      </button>
+    </div>
+  </section>
+}

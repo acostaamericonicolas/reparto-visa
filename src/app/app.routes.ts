@@ -10,6 +10,7 @@ export const routes: Routes = [
       // El mes elegido va como ?mes=fecha-de-cierre: una sola ruta, así la página no se recrea al cambiar de mes.
       { path: '', pathMatch: 'full', loadComponent: () => import('./features/resumen/resumen').then((m) => m.Resumen) },
       { path: 'graficos', loadComponent: () => import('./features/graficos/graficos').then((m) => m.Graficos) },
+      { path: 'hogar', loadComponent: () => import('./features/hogar/hogar').then((m) => m.HogarPagina) },
       { path: 'personas', loadComponent: () => import('./features/personas/personas').then((m) => m.Personas) },
     ],
   },

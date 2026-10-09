@@ -1,0 +1,33 @@
+:host {
+  display: grid;
+  gap: 18px;
+  max-width: 640px;
+}
+.bloque {
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+}
+label {
+  display: grid;
+  gap: 4px;
+  font-size: 12.5px;
+  color: var(--texto-2);
+}
+label.fila {
+  display: flex;
+}
+label.boton {
+  display: inline-block;
+  color: var(--texto);
+  font-size: inherit;
+}
+.etiqueta-fija {
+  min-width: 90px;
+}
+.crece {
+  flex: 1;
+}
+input[type='text'] {
+  width: 100%;
+}

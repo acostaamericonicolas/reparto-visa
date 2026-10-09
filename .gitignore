@@ -1,0 +1,7 @@
+# respaldos con datos de gastos: no van al repo
+respaldo*.json
+reparto-visa-*.json
+.firebase/
+firebase-debug.log
+firestore-debug.log
+node_modules/

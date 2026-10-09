@@ -48,3 +48,10 @@ nav a.activo {
     display: none;
   }
 }
+/* Sol/luna en el login, donde no hay barra superior */
+.tema-suelto {
+  position: fixed;
+  top: 12px;
+  right: 16px;
+  z-index: 5;
+}

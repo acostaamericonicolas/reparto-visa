@@ -1,5 +1,6 @@
-import { Component, ElementRef, OnDestroy, effect, input, viewChild } from '@angular/core';
+import { Component, ElementRef, OnDestroy, effect, inject, input, viewChild } from '@angular/core';
 import { Chart, registerables } from 'chart.js';
+import { Tema } from '../../../services/tema';
 import { valorCss } from '../../colores';
 import { formatoMonto } from '../../montos';
 
@@ -21,8 +22,14 @@ export class GraficoTorta implements OnDestroy {
   private lienzo = viewChild.required<ElementRef<HTMLCanvasElement>>('lienzo');
   private grafico?: Chart;
 
+  private tema = inject(Tema);
+
   constructor() {
-    effect(() => this.dibujar());
+    // Los colores salen de variables CSS: al cambiar el tema se vuelve a dibujar con los nuevos.
+    effect(() => {
+      this.tema.actual();
+      this.dibujar();
+    });
   }
 
   private dibujar() {

@@ -5,10 +5,11 @@ import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 import { filter, map } from 'rxjs';
 import { Datos } from './services/datos';
 import { Sesion } from './services/sesion';
+import { BotonTema } from './shared/componentes/boton-tema/boton-tema';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, BotonTema],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })

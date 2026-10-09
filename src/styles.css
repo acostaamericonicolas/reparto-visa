@@ -30,8 +30,10 @@
   --radio: 8px;
 }
 
+/* Tema oscuro. Sin elección (sin data-tema) sigue al sistema; el sol/luna fija data-tema="claro" u "oscuro".
+   Los mismos valores van dos veces: uno para el sistema en oscuro y otro para la elección manual. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-tema='claro']) {
     --fondo: #11161b;
     --superficie: #192028;
     --texto: #e5ebf0;
@@ -47,6 +49,25 @@
     --p5: #60a5fa; --p6: #94a3b8; --p7: #14b8a6; --p8: #22d3ee;
     color-scheme: dark;
   }
+}
+:root[data-tema='oscuro'] {
+  --fondo: #11161b;
+  --superficie: #192028;
+  --texto: #e5ebf0;
+  --texto-2: #94a3b0;
+  --linea: #2b3641;
+  --acento: #7db5e0;
+  --acento-suave: #1d3044;
+  --aviso: #e8a65a;
+  --aviso-suave: #3a2a17;
+  --peligro: #f2867e;
+  --ok: #7fcf95;
+  --p1: #3b82f6; --p2: #2ec4a6; --p3: #818cf8; --p4: #a3e635;
+  --p5: #60a5fa; --p6: #94a3b8; --p7: #14b8a6; --p8: #22d3ee;
+  color-scheme: dark;
+}
+:root[data-tema='claro'] {
+  color-scheme: light;
 }
 
 /* 2. Base ----------------------------------------------------------- */

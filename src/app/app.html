@@ -10,6 +10,7 @@
       </nav>
       <div class="usuario">
         <span class="ayuda">{{ usuario.email }}</span>
+        <app-boton-tema />
         <button class="boton boton-chico" (click)="sesion.salir()">Salir</button>
       </div>
     </div>
@@ -25,5 +26,8 @@
   @if (datos.error()) {
     <div class="pagina error-global"><div class="aviso error">{{ datos.error() }}</div></div>
   }
+} @else {
+  <!-- Sin sesión (login) no hay barra: el sol/luna va solo en la esquina -->
+  <div class="tema-suelto"><app-boton-tema /></div>
 }
 <router-outlet />

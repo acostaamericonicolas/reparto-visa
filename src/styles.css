@@ -103,6 +103,23 @@ p.error { color: var(--peligro); font-size: 12.5px; margin: 0; }
 .vacio { padding: 40px 20px; text-align: center; color: var(--texto-2); display: grid; gap: 10px; justify-items: center; }
 .vacio strong { color: var(--texto); font: 700 18px var(--f-titulo); }
 
+/* 4. Contenido ancho en tarjetas y desplegables ----------------------
+   Una tabla ancha scrollea de costado dentro de su cuadro (.desplazable) y nunca ensancha la tarjeta
+   ni la página. Las grillas estiran sus columnas al contenido si no se las limita con minmax(0, 1fr)
+   y min-width: 0; por eso vale para cualquier .panel, aunque cada componente lo haga grid a su manera. */
+.panel { min-width: 0; max-width: 100%; grid-template-columns: minmax(0, 1fr); }
+.panel > *, details, details > * { min-width: 0; max-width: 100%; }
+.desplazable { overflow-x: auto; max-width: 100%; -webkit-overflow-scrolling: touch; }
+
+/* Desplegable dentro de una tarjeta: el título se toca para abrir o cerrar */
+.desplegable > summary { cursor: pointer; font-weight: 600; padding: 4px 0; }
+.desplegable[open] > summary { margin-bottom: 8px; }
+
+/* En las tablas de un desplegable, la primera columna (el nombre) queda fija al scrollear de costado */
+.desplegable .desplazable :is(th, td):first-child {
+  position: sticky; left: 0; z-index: 1; background: var(--superficie); white-space: nowrap;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .boton { transition: border-color 0.15s; }
 }

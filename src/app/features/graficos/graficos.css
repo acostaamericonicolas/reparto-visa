@@ -16,29 +16,11 @@
   color: var(--acento);
   font-weight: 600;
 }
-/* minmax(0, 1fr): la tabla del desplegable scrollea de costado en su cuadro, sin ensanchar la sección */
+/* El scroll de las tablas anchas, los desplegables y la columna fija vienen de styles.css (sección 4) */
 .bloque {
   padding: 16px;
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
   gap: 14px;
-  min-width: 0;
-}
-.desplegable {
-  min-width: 0;
-}
-.desplazable {
-  overflow-x: auto;
-  max-width: 100%;
-}
-/* La columna de nombres queda fija al scrollear de costado */
-.desplegable th:first-child,
-.desplegable td:first-child {
-  position: sticky;
-  left: 0;
-  background: var(--superficie);
-  white-space: nowrap;
-  z-index: 1;
 }
 tfoot td {
   font-weight: 600;
@@ -67,14 +49,6 @@ tfoot td {
   border-color: var(--acento);
   box-shadow: 0 0 0 1px var(--acento);
   background: var(--acento-suave);
-}
-.desplegable summary {
-  cursor: pointer;
-  font-weight: 600;
-  padding: 4px 0;
-}
-.desplegable[open] summary {
-  margin-bottom: 8px;
 }
 caption {
   text-align: left;

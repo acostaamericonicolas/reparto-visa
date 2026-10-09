@@ -189,14 +189,6 @@ textarea {
   justify-content: space-between;
   align-items: center;
 }
-.desplegable summary {
-  cursor: pointer;
-  font-weight: 600;
-  padding: 4px 0;
-}
-.desplegable[open] summary {
-  margin-bottom: 8px;
-}
 @media (max-width: 600px) {
   .pago {
     grid-template-columns: 1fr 1fr auto;

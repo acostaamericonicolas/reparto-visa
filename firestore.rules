@@ -2,8 +2,11 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     // Solo estas cuentas de Google pueden leer y escribir. Para sumar a alguien, agregá su mail y desplegá las reglas.
+    // Se exige que la sesión sea de Google: aunque algún día se habilite otro método (mail y contraseña),
+    // nadie puede crear una cuenta con uno de estos mails y entrar.
     function autorizado() {
       return request.auth != null
+        && request.auth.token.firebase.sign_in_provider == 'google.com'
         && request.auth.token.email_verified == true
         && request.auth.token.email in [
           'acosta.nicolas96@gmail.com',

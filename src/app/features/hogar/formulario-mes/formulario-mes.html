@@ -70,11 +70,17 @@
       <summary>
         <input type="checkbox" class="tilde-resumen" [checked]="g.pagado" [attr.aria-label]="'Ya se pagó ' + (g.concepto || 'el gasto')"
                title="Ya se pagó o se compró" (change)="pagado(g.id, $event)" />
-        <span class="estado-pago" [class.listo]="g.pagado">{{ g.pagado ? 'Pagado' : 'Por pagar' }}</span>
-        <span class="g-concepto">{{ g.concepto || 'Sin nombre' }}</span>
-        <span class="etiqueta categoria-etiqueta">{{ g.categoria }}</span>
-        @if (falta(g) > 0) { <span class="etiqueta nuevo">falta {{ falta(g) | pesos }}</span> }
-        <span class="g-monto num">{{ monto(g) | pesos }}</span>
+        <div class="g-datos">
+          <div class="g-linea">
+            <span class="g-concepto">{{ g.concepto || 'Sin nombre' }}</span>
+            <span class="g-monto num">{{ monto(g) | pesos }}</span>
+          </div>
+          <div class="g-linea g-meta">
+            <span class="estado-pago" [class.listo]="g.pagado">{{ g.pagado ? 'Pagado' : 'Por pagar' }}</span>
+            <span class="etiqueta categoria-etiqueta">{{ g.categoria }}</span>
+            @if (falta(g) > 0) { <span class="etiqueta nuevo">falta {{ falta(g) | pesos }}</span> }
+          </div>
+        </div>
       </summary>
 
       <div class="detalle">
@@ -89,7 +95,7 @@
           <label class="campo-real">{{ g.pagos.length ? 'Pagado hasta ahora' : 'Real' }}
             <input type="text" inputmode="decimal" placeholder="pendiente" [value]="g.real ?? ''" [readOnly]="g.pagos.length > 0" (change)="real(g.id, $event)" />
           </label>
-          <label>Quién lo paga
+          <label class="campo-quien">Quién lo paga
             <select (change)="pagadoPor(g.id, $event)">
               @for (o of opcionesPago(); track o.valor) {
                 <option [value]="o.valor" [selected]="g.pagadoPor === o.valor">{{ o.nombre }}</option>

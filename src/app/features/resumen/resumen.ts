@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, signal } from '@angular/core';
+import { Component, ElementRef, computed, inject, input, signal, viewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { Persona } from '../../models/config';
 import { Item } from '../../models/resumen';
@@ -50,6 +50,23 @@ export class Resumen {
     this.filtroElegido.set({ mes, valor });
   }
 
+  /** "Movimientos" arranca cerrado; se abre al tocarlo o al elegir una persona o "Sin asignar". */
+  protected movimientosAbiertos = signal(false);
+  private movimientos = viewChild<ElementRef<HTMLDetailsElement>>('movimientos');
+  protected nombreFiltro = computed(() => this.datos.persona(this.filtro())?.nombre ?? '');
+
+  /** Tocar una tarjeta filtra la tabla, la abre y la lleva a la vista (en el celular queda más abajo). */
+  protected elegirPersona(valor: string) {
+    this.cambiarFiltro(valor);
+    if (valor === 'todos') return;
+    this.abrirMovimientos();
+  }
+
+  private abrirMovimientos() {
+    this.movimientosAbiertos.set(true);
+    setTimeout(() => this.movimientos()?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  }
+
   protected async importar(evento: Event) {
     const campo = evento.target as HTMLInputElement;
     const archivo = campo.files?.[0];
@@ -62,6 +79,7 @@ export class Resumen {
       await this.router.navigate(['/'], { queryParams: { mes: r.resumen.meta.id } });
       // Si quedó algo por asignar, se abre directo en "Sin asignar".
       this.cambiarFiltro(r.pendientes ? '' : 'todos', r.resumen.meta.id);
+      if (r.pendientes) this.abrirMovimientos();
       this.estado.set({
         texto:
           `Importado el cierre ${r.resumen.meta.cierre}: ${r.resumen.rows.length} ítems. ` +

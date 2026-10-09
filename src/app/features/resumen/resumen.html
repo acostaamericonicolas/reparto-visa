@@ -42,24 +42,28 @@
   @if (datos.cargando()) {
     <div class="vacio">Cargando…</div>
   } @else if (resumen(); as r) {
-    <app-totales-personas [resumen]="r" [personas]="datos.personas()" [filtro]="filtro()" (filtroChange)="cambiarFiltro($event)" (copiar)="copiar($event)"
+    <app-totales-personas [resumen]="r" [personas]="datos.personas()" [filtro]="filtro()" (filtroChange)="elegirPersona($event)" (copiar)="copiar($event)"
                           (cambiarEstado)="datos.cambiarEstado(r.meta.id, $event.persona, $event.campo, $event.valor)" />
 
-    <section class="panel">
-      <div class="cabecera-tabla">
+    <details #movimientos class="panel movimientos" [open]="movimientosAbiertos()"
+             (toggle)="movimientosAbiertos.set(movimientos.open)">
+      <summary>
         <h2>Movimientos ({{ r.rows.length }})</h2>
-        <div class="fila">
-          <span class="ayuda">
-            <span class="etiqueta auto">Autocompletado</span> sale de otro mes ·
-            <span class="etiqueta nuevo">Nuevo</span> falta asignar
-          </span>
-          <button class="boton boton-chico" (click)="completar()" title="Copia el reparto de otros meses a los ítems sin asignar">
-            Completar desde otros meses
-          </button>
-        </div>
+        @if (filtro() !== 'todos') {
+          <span class="ayuda">· {{ filtro() === '' ? 'Sin asignar' : nombreFiltro() }}</span>
+        }
+      </summary>
+      <div class="cabecera-tabla">
+        <span class="ayuda">
+          <span class="etiqueta auto">Autocompletado</span> sale de otro mes ·
+          <span class="etiqueta nuevo">Nuevo</span> falta asignar
+        </span>
+        <button class="boton boton-chico" (click)="completar()" title="Copia el reparto de otros meses a los ítems sin asignar">
+          Completar desde otros meses
+        </button>
       </div>
       <app-tabla-items [resumen]="r" [personas]="datos.personas()" [filtro]="filtro()" (verImpuestos)="impuestos.set($event)" />
-    </section>
+    </details>
   } @else {
     <section class="panel vacio">
       <strong>Todavía no hay ningún resumen cargado</strong>

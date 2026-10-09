@@ -12,6 +12,29 @@
   opacity: 0.7;
   pointer-events: none;
 }
+/* "Movimientos" como desplegable: el título es la parte que se toca */
+.movimientos summary {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 14px;
+  cursor: pointer;
+  list-style: none;
+}
+.movimientos summary::-webkit-details-marker {
+  display: none;
+}
+.movimientos summary::before {
+  content: '▸';
+  color: var(--texto-2);
+  transition: transform 0.15s;
+}
+.movimientos[open] summary::before {
+  transform: rotate(90deg);
+}
+.movimientos[open] summary {
+  border-bottom: 1px solid var(--linea);
+}
 .cabecera-tabla {
   display: flex;
   flex-wrap: wrap;

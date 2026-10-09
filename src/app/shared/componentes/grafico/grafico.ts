@@ -5,6 +5,15 @@ import { formatoMonto } from '../../montos';
 
 Chart.register(...registerables);
 
+const COMPACTO = new Intl.NumberFormat('es-AR', { maximumFractionDigits: 1 });
+
+/** Eje vertical: 1400000 → "1,4 M", 900000 → "900 k" (el monto exacto está en el tooltip). */
+function abreviado(v: number): string {
+  if (Math.abs(v) >= 1_000_000) return COMPACTO.format(v / 1_000_000) + ' M';
+  if (Math.abs(v) >= 1_000) return COMPACTO.format(v / 1_000) + ' k';
+  return COMPACTO.format(v);
+}
+
 /** Una serie del gráfico. `color` es una variable CSS (ej. "var(--p1)"). */
 export interface SerieGrafico {
   nombre: string;
@@ -71,10 +80,11 @@ export class Grafico implements OnDestroy {
         maintainAspectRatio: false,
         interaction: { mode: 'index', intersect: false },
         scales: {
-          x: { stacked: barras && this.apilado(), ticks: { color: texto }, grid: { display: false } },
+          // Sin etiquetas inclinadas: en pantallas chicas Chart.js saltea meses en vez de girarlos.
+          x: { stacked: barras && this.apilado(), ticks: { color: texto, maxRotation: 0, autoSkipPadding: 8 }, grid: { display: false } },
           y: {
             stacked: barras && this.apilado(),
-            ticks: { color: texto, callback: (v) => prefijo + formatoMonto(Number(v)).replace(/,00$/, '') },
+            ticks: { color: texto, callback: (v) => prefijo + abreviado(Number(v)) },
             grid: { color: grilla },
           },
         },

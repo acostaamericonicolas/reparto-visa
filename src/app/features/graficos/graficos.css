@@ -16,14 +16,29 @@
   color: var(--acento);
   font-weight: 600;
 }
+/* minmax(0, 1fr): la tabla del desplegable scrollea de costado en su cuadro, sin ensanchar la sección */
 .bloque {
   padding: 16px;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 14px;
+  min-width: 0;
+}
+.desplegable {
   min-width: 0;
 }
 .desplazable {
   overflow-x: auto;
+  max-width: 100%;
+}
+/* La columna de nombres queda fija al scrollear de costado */
+.desplegable th:first-child,
+.desplegable td:first-child {
+  position: sticky;
+  left: 0;
+  background: var(--superficie);
+  white-space: nowrap;
+  z-index: 1;
 }
 tfoot td {
   font-weight: 600;
@@ -65,4 +80,29 @@ caption {
   text-align: left;
   font: 700 14px var(--f-titulo);
   padding-bottom: 6px;
+}
+
+/* Celular: personas de la proyección de a dos por fila y bloques más compactos */
+@media (max-width: 600px) {
+  .bloque {
+    padding: 12px;
+    gap: 10px;
+  }
+  .comprometido {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .dato {
+    flex-direction: column;
+    gap: 2px;
+    padding: 6px 8px;
+    font-size: 12.5px;
+  }
+  .dato strong {
+    font-size: 13px;
+    text-align: left;
+  }
+  .titulo-con-control select {
+    width: 100%;
+  }
 }

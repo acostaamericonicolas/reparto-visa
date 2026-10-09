@@ -69,7 +69,12 @@ th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.06em; color
 .num { text-align: right; font-family: var(--f-numeros); font-variant-numeric: tabular-nums; white-space: nowrap; }
 
 /* 3. Utilitarias ----------------------------------------------------- */
-.pagina { max-width: 1180px; margin: 0 auto; padding-inline: 16px; padding-block: 20px 48px; display: grid; gap: 18px; }
+/* minmax(0, 1fr): lo ancho (tablas) scrollea en su cuadro y no ensancha la página en el celular */
+.pagina { max-width: 1180px; margin: 0 auto; padding-inline: 16px; padding-block: 20px 48px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; }
+@media (max-width: 600px) {
+  .pagina { padding-inline: 12px; padding-block: 14px 32px; gap: 14px; }
+  h1 { font-size: 21px; }
+}
 .panel { background: var(--superficie); border: 1px solid var(--linea); border-radius: var(--radio); }
 .ayuda { font-size: 12.5px; color: var(--texto-2); margin: 0; }
 .fila { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }

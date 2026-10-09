@@ -62,3 +62,118 @@ th {
   color: var(--aviso);
   font-weight: 600;
 }
+/* Textos que solo hacen falta en el celular, donde no hay encabezado de columnas */
+.movil {
+  display: none;
+}
+
+/* Celular: cada ítem es una tarjeta, sin scroll lateral.
+   fecha · cuota · importe / detalle / de quién · Dividir */
+@media (max-width: 640px) {
+  table {
+    min-width: 0;
+  }
+  thead {
+    display: none;
+  }
+  tbody,
+  tr,
+  td {
+    display: block;
+  }
+  td {
+    border: 0;
+    padding: 0;
+  }
+  .movil {
+    display: inline;
+  }
+  .grupo td {
+    padding: 8px 12px;
+  }
+  tr:not(.grupo):not(.parte) {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas:
+      'fecha cuota pesos'
+      'detalle detalle usd'
+      'quien quien accion';
+    gap: 4px 10px;
+    align-items: center;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--linea);
+  }
+  .c-fecha {
+    grid-area: fecha;
+    color: var(--texto-2);
+  }
+  .c-cuota {
+    grid-area: cuota;
+    color: var(--texto-2);
+  }
+  .c-pesos {
+    grid-area: pesos;
+    font-weight: 600;
+  }
+  .c-usd {
+    grid-area: usd;
+  }
+  .c-detalle {
+    grid-area: detalle;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .c-detalle br {
+    display: none;
+  }
+  .c-detalle .etiqueta {
+    margin: 0 0 0 6px;
+  }
+  .c-quien {
+    grid-area: quien;
+    min-width: 0;
+  }
+  .c-accion {
+    grid-area: accion;
+  }
+  .quien select {
+    max-width: none;
+    flex: 1;
+    min-width: 0;
+  }
+  .sub {
+    display: inline;
+    margin-left: 4px;
+  }
+
+  /* Partes de un ítem dividido: persona arriba, monto y "Quitar" abajo */
+  .parte {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 6px 10px;
+    padding: 6px 12px;
+    background: var(--acento-suave);
+  }
+  .parte td {
+    background: none;
+  }
+  .c-vacia {
+    display: none;
+  }
+  .c-persona {
+    grid-column: 1 / -1;
+  }
+  .c-monto {
+    text-align: left;
+  }
+  .monto-parte {
+    width: 140px;
+  }
+  .parte.ultima {
+    display: block;
+    border-bottom: 1px solid var(--linea);
+  }
+  .herramientas {
+    justify-content: flex-start;
+  }
+}

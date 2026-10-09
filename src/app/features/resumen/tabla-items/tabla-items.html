@@ -20,8 +20,8 @@
             @let m = moneda(r);
             @let filtrado = personaFiltrada() && r.partes.length > 1;
             <tr>
-              <td class="fecha">{{ r.fecha }}</td>
-              <td class="detalle">
+              <td class="fecha c-fecha">{{ r.fecha }}</td>
+              <td class="detalle c-detalle">
                 {{ r.detalle }}
                 @if (r.tipo === 'impuestos') {
                   <button class="boton-link" (click)="verImpuestos.emit(r)">Ver detalle ({{ r.items?.length }})</button>
@@ -33,22 +33,22 @@
                   <span class="etiqueta auto" [title]="'Reparto copiado del cierre ' + r.origen">Autocompletado</span>
                 }
               </td>
-              <td class="fecha">{{ r.cuota }}</td>
-              <td class="num">
+              <td class="fecha c-cuota">@if (r.cuota) {<span class="movil">cuota </span>}{{ r.cuota }}</td>
+              <td class="num c-pesos">
                 @if (filtrado && m === 'pesos') {
-                  {{ parteDe(r, 'pesos') | monto }}<span class="sub">de {{ r.pesos | monto }}</span>
+                  <span class="movil">$ </span>{{ parteDe(r, 'pesos') | monto }}<span class="sub">de {{ r.pesos | monto }}</span>
                 } @else if (r.pesos) {
-                  {{ r.pesos | monto }}
+                  <span class="movil">$ </span>{{ r.pesos | monto }}
                 }
               </td>
-              <td class="num">
+              <td class="num c-usd">
                 @if (filtrado && m === 'usd') {
-                  {{ parteDe(r, 'usd') | monto }}<span class="sub">de {{ r.usd | monto }}</span>
+                  <span class="movil">U$S </span>{{ parteDe(r, 'usd') | monto }}<span class="sub">de {{ r.usd | monto }}</span>
                 } @else if (r.usd) {
-                  {{ r.usd | monto }}
+                  <span class="movil">U$S </span>{{ r.usd | monto }}
                 }
               </td>
-              <td>
+              <td class="c-quien">
                 @if (dividido(r)) {
                   <span class="ayuda">Dividido en {{ r.partes.length }}</span>
                 } @else {
@@ -63,7 +63,7 @@
                   </span>
                 }
               </td>
-              <td>
+              <td class="c-accion">
                 <button class="boton boton-chico" (click)="alternarDivision(r)">{{ dividido(r) ? 'Unir' : 'Dividir' }}</button>
               </td>
             </tr>
@@ -71,8 +71,8 @@
             @if (dividido(r)) {
               @for (p of r.partes; track $index; let i = $index) {
                 <tr class="parte">
-                  <td></td>
-                  <td colspan="2">
+                  <td class="c-vacia"></td>
+                  <td colspan="2" class="c-persona">
                     <span class="quien">
                       <span class="punto" [style.background]="color(p.p)"></span>
                       <select [attr.aria-label]="'Persona de la parte ' + (i + 1)" (change)="cambiarPersona(r, i, $event)">
@@ -83,20 +83,20 @@
                       </select>
                     </span>
                   </td>
-                  <td class="num" colspan="2">
+                  <td class="num c-monto" colspan="2">
                     <label class="ayuda">
                       {{ m === 'usd' ? 'U$S' : '$' }}
                       <input class="monto-parte" type="text" inputmode="decimal" [value]="p[m] | monto"
                              [attr.aria-label]="'Monto de la parte ' + (i + 1)" (change)="cambiarMonto(r, i, $event)" />
                     </label>
                   </td>
-                  <td colspan="2">
+                  <td colspan="2" class="c-quitar">
                     <button class="boton-link boton-peligro" (click)="quitar(r, i)">Quitar</button>
                   </td>
                 </tr>
               }
               <tr class="parte ultima">
-                <td></td>
+                <td class="c-vacia"></td>
                 <td colspan="6">
                   <div class="herramientas">
                     @let d = diferencia(r);

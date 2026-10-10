@@ -43,14 +43,9 @@ export function sumarMeses(anioMes: string, n: number): string {
 }
 
 /**
- * Meses todavía sin resumen que se muestran "apagados": del mes de hoy a `cantidad` meses más ("yyyy-mm"),
- * salteando el último mes cargado y los anteriores (`ultimo` es el "yyyy-mm" en que vence el último resumen).
+ * Meses todavía sin resumen que se muestran "apagados": los `cantidad` meses ("yyyy-mm") que siguen al mes en que
+ * vence el último resumen cargado.
  */
-export function mesesFuturos(hoy: string, ultimo: string | null, cantidad = 2): string[] {
-  const meses: string[] = [];
-  for (let i = 0; i <= cantidad; i++) {
-    const mes = sumarMeses(hoy, i);
-    if (!ultimo || mes > ultimo) meses.push(mes);
-  }
-  return meses;
+export function mesesFuturos(ultimo: string, cantidad = 2): string[] {
+  return Array.from({ length: cantidad }, (_, i) => sumarMeses(ultimo, i + 1));
 }

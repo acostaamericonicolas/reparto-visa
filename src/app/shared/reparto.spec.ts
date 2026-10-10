@@ -120,9 +120,8 @@ describe('ordenarPersonas', () => {
 });
 
 describe('mesesFuturos', () => {
-  it('muestra del mes de hoy a dos más, salteando los que ya tienen resumen', () => {
-    expect(mesesFuturos('2026-10', '2026-10')).toEqual(['2026-11', '2026-12']);
-    expect(mesesFuturos('2026-11', '2026-10')).toEqual(['2026-11', '2026-12', '2027-01']);
-    expect(mesesFuturos('2026-10', null)).toEqual(['2026-10', '2026-11', '2026-12']);
+  it('muestra los dos meses que siguen al último resumen cargado', () => {
+    expect(mesesFuturos('2026-10')).toEqual(['2026-11', '2026-12']);
+    expect(mesesFuturos('2026-12')).toEqual(['2027-01', '2027-02']);
   });
 });

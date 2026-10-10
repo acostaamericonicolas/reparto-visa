@@ -45,9 +45,7 @@ export class Resumen {
   protected futuros = computed(() => {
     const ultimo = this.lista().at(-1);
     if (!ultimo) return [];
-    const hoy = new Date();
-    const mesHoy = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
-    return mesesFuturos(mesHoy, (fechaIso(ultimo.meta.vence) ?? ultimo.meta.id).slice(0, 7));
+    return mesesFuturos((fechaIso(ultimo.meta.vence) ?? ultimo.meta.id).slice(0, 7));
   });
   /** El mes elegido, si es uno que todavía no tiene PDF. */
   protected mesFuturo = computed(() => {

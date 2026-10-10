@@ -1,9 +1,9 @@
 <main class="pagina">
   <header class="encabezado">
     <h1>Gráficos</h1>
-    <div class="selector" role="group" aria-label="Moneda">
-      <button class="boton boton-chico" [attr.aria-pressed]="moneda() === 'pesos'" (click)="moneda.set('pesos')">Pesos</button>
-      <button class="boton boton-chico" [attr.aria-pressed]="moneda() === 'usd'" (click)="moneda.set('usd')">Dólares</button>
+    <div class="interruptor" role="group" aria-label="Moneda">
+      <button type="button" [attr.aria-pressed]="moneda() === 'pesos'" (click)="moneda.set('pesos')">Pesos</button>
+      <button type="button" [attr.aria-pressed]="moneda() === 'usd'" (click)="moneda.set('usd')">Dólares</button>
     </div>
   </header>
 
@@ -16,23 +16,28 @@
     </section>
   } @else {
     <section class="panel bloque">
-      <div class="titulo-con-control">
-        <div>
-          <h2>Evolución por persona</h2>
-          <p class="ayuda">Cómo sube o baja el gasto de cada uno mes a mes, por mes de vencimiento del resumen.</p>
-        </div>
-        <select aria-label="Persona" (change)="elegirPersona($event)">
-          <option [value]="TODAS" [selected]="personaEvolucion() === null">Todas</option>
-          @for (s of seriesMoneda(); track s.id) {
-            <option [value]="s.id" [selected]="s.id === personaEvolucion()">{{ s.nombre }}</option>
-          }
-        </select>
+      <div>
+        <h2>Evolución por persona</h2>
+        <p class="ayuda">Cómo sube o baja el gasto de cada uno mes a mes, por mes de vencimiento del resumen.</p>
+      </div>
+      <div class="chips deslizables" role="group" aria-label="Persona">
+        <button class="chip" type="button" [attr.aria-pressed]="personaEvolucion() === null" (click)="alternarPersonaEvolucion(null)">Todas</button>
+        @for (c of chipsEvolucion(); track c.id) {
+          <button class="chip" type="button" [attr.aria-pressed]="personaEvolucion() === c.id" (click)="alternarPersonaEvolucion(c.id)">
+            <span class="punto" [style.background]="c.color"></span>{{ c.nombre }}
+          </button>
+        }
       </div>
       <app-grafico tipo="lineas" [etiquetas]="gasto().etiquetas" [series]="seriesEvolucion()" [prefijo]="prefijo()"
                    descripcion="Líneas con el gasto mensual de cada persona" />
 
       <details class="desplegable">
-        <summary>Detalle por persona y mes</summary>
+        <summary>
+          Detalle por persona y mes
+          <span class="variacion-total" [class.sube]="(variacionTotal() ?? 0) > 0" [class.baja]="(variacionTotal() ?? 0) < 0">
+            · Total {{ variacionTotal() | variacion }}
+          </span>
+        </summary>
         <div class="desplazable">
           <table>
             <thead>
@@ -71,77 +76,96 @@
       </details>
     </section>
 
-    <section class="panel bloque">
-      <div class="titulo-con-control">
-        <div>
-          <h2>Proyección de cuotas</h2>
-          <p class="ayuda">
-            Lo que le queda pagar a cada persona en los próximos resúmenes por las cuotas pendientes. No incluye
-            gastos nuevos ni suscripciones. Solo pesos.
-          </p>
-        </div>
-        <label class="ayuda">
-          Desde
-          <select (change)="elegirMesProyeccion($event)">
-            @for (o of opcionesProyeccion(); track o.id) {
-              <option [value]="o.id" [selected]="o.id === mesProyeccion()">{{ o.nombre }}</option>
-            }
-          </select>
-        </label>
-      </div>
-
+    <section class="panel proyeccion">
       @if (proyeccion(); as p) {
-        @if (p.etiquetas.length) {
-          <div class="comprometido" role="group" aria-label="Filtrar por persona">
-            <button class="dato" [attr.aria-pressed]="personaProyeccion() === null" (click)="personaProyeccion.set(null)">
-              <span>Todas</span>
-              <strong class="num">{{ totalComprometido() | pesos }}</strong>
-            </button>
-            @for (c of comprometido(); track c.id) {
-              <button class="dato" [attr.aria-pressed]="personaProyeccion() === c.id" (click)="alternarPersonaProyeccion(c.id)">
-                <span><span class="punto" [style.background]="c.color"></span> {{ c.nombre }}</span>
-                <strong class="num">{{ c.total | pesos }}</strong>
-              </button>
+        <!-- Tarjeta principal: cuánto queda en cuotas -->
+        <div class="hero">
+          <div class="hero-cabecera">
+            <span class="hero-etiqueta">Proyección de cuotas{{ personaProyeccion() !== null ? ' · ' + nombreElegido() : '' }}</span>
+            <label class="desde">Desde
+              <select (change)="elegirMesProyeccion($event)">
+                @for (o of opcionesProyeccion(); track o.id) {
+                  <option [value]="o.id" [selected]="o.id === mesProyeccion()">{{ o.nombre }}</option>
+                }
+              </select>
+            </label>
+          </div>
+          <div class="hero-monto">{{ montoProyeccion() | pesos }}</div>
+          <div class="hero-sub">
+            @if (p.etiquetas.length) {
+              Próximo mes {{ proximoMes() | pesos }} · hasta {{ hasta() }}
+            } @else {
+              Ese resumen no tiene cuotas pendientes
             }
           </div>
+          <div class="hero-sub">Lo que le queda pagar a cada persona por las cuotas pendientes. Solo pesos; no incluye gastos nuevos ni suscripciones.</div>
+        </div>
 
-          <app-grafico [etiquetas]="p.etiquetas" [series]="seriesProyeccion()"
-                       descripcion="Barras apiladas con las cuotas que vencen cada mes por persona" />
-          @if (p.bancoDesde && personaProyeccion() === null) {
-            <p class="ayuda">El banco informa además {{ p.bancoDesde.pesos | pesos }} {{ p.bancoDesde.mes.replace('Desde', 'a partir de') }}.</p>
-          }
-
-          @if (personaProyeccion() !== null) {
-            <div class="desplazable">
-              <table>
-                <caption>Cuotas pendientes de {{ nombreElegido() }}</caption>
-                <thead>
-                  <tr>
-                    <th>Compra</th>
-                    <th>Detalle</th>
-                    <th>Cuota actual</th>
-                    <th class="num">Faltan</th>
-                    <th class="num">Por mes</th>
-                    <th class="num">Total restante</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (c of cuotasDeLaPersona(); track $index) {
-                    <tr>
-                      <td class="num">{{ c.fecha }}</td>
-                      <td>{{ c.detalle }}</td>
-                      <td class="num">{{ c.cuota }}</td>
-                      <td class="num">{{ c.restantes }}</td>
-                      <td class="num">{{ c.porMes | pesos }}</td>
-                      <td class="num">{{ c.total | pesos }}</td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
+        @if (p.etiquetas.length) {
+          <div class="contenido-proyeccion">
+            <div class="comprometido" role="group" aria-label="Filtrar por persona">
+              <button class="monto-persona" type="button" [attr.aria-pressed]="personaProyeccion() === null" (click)="personaProyeccion.set(null)">
+                <span>Todas</span>
+                <strong class="num">{{ totalComprometido() | pesos }}</strong>
+              </button>
+              @for (c of comprometido(); track c.id) {
+                <button class="monto-persona" type="button" [attr.aria-pressed]="personaProyeccion() === c.id" (click)="alternarPersonaProyeccion(c.id)">
+                  <span><span class="punto" [style.background]="c.color"></span> {{ c.nombre }}</span>
+                  <strong class="num">{{ c.total | pesos }}</strong>
+                </button>
+              }
             </div>
-          }
-        } @else {
-          <p class="ayuda">Ese resumen no tiene cuotas pendientes.</p>
+
+            <app-grafico [etiquetas]="p.etiquetas" [series]="seriesProyeccion()"
+                         descripcion="Barras apiladas con las cuotas que vencen cada mes por persona" />
+            @if (personaProyeccion() === null) {
+              <p class="ayuda">
+                La línea punteada es lo que informa el banco en "Cuotas a vencer".
+                @if (p.bancoDesde) { El banco informa además {{ p.bancoDesde.pesos | pesos }} {{ p.bancoDesde.mes.replace('Desde', 'a partir de') }}. }
+              </p>
+            }
+
+            @if (personaProyeccion() !== null) {
+              <h3>Cuotas pendientes de {{ nombreElegido() }}</h3>
+              <!-- En la compu, tabla; en el celular, una tarjetita por cuota -->
+              <div class="desplazable cuotas-tabla">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Compra</th>
+                      <th>Detalle</th>
+                      <th>Cuota actual</th>
+                      <th class="num">Faltan</th>
+                      <th class="num">Por mes</th>
+                      <th class="num">Total restante</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (c of cuotasDeLaPersona(); track $index) {
+                      <tr>
+                        <td class="num">{{ c.fecha }}</td>
+                        <td>{{ c.detalle }}</td>
+                        <td class="num">{{ c.cuota }}</td>
+                        <td class="num">{{ c.restantes }}</td>
+                        <td class="num">{{ c.porMes | pesos }}</td>
+                        <td class="num">{{ c.total | pesos }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+              <div class="cuotas-tarjetas">
+                @for (c of cuotasDeLaPersona(); track $index) {
+                  <div class="cuota">
+                    <strong>{{ c.detalle }}</strong>
+                    <strong class="num">{{ c.total | pesos }}</strong>
+                    <span>{{ c.fecha }} · cuota {{ c.cuota }} · faltan {{ c.restantes }}</span>
+                    <span class="num">{{ c.porMes | pesos }} por mes</span>
+                  </div>
+                }
+              </div>
+            }
+          </div>
         }
       }
     </section>

@@ -4,12 +4,13 @@ import { EstadoPersona, Resumen } from '../../../models/resumen';
 import { DolaresPipe } from '../../../pipes/dolares-pipe';
 import { PesosPipe } from '../../../pipes/pesos-pipe';
 import { colorPersona } from '../../../shared/colores';
+import { Icono } from '../../../shared/componentes/icono/icono';
 import { totalesPorPersona } from '../../../shared/reparto';
 
-/** Tarjetas con el total de cada persona. Tocar una filtra la tabla. */
+/** Una tarjeta por persona: nombre y saldo arriba; Avisado, Pagó y Copiar abajo. Tocar la tarjeta filtra Movimientos. */
 @Component({
   selector: 'app-totales-personas',
-  imports: [PesosPipe, DolaresPipe],
+  imports: [PesosPipe, DolaresPipe, Icono],
   templateUrl: './totales-personas.html',
   styleUrl: './totales-personas.css',
 })
@@ -21,19 +22,18 @@ export class TotalesPersonas {
   copiar = output<Persona>();
   cambiarEstado = output<{ persona: string; campo: keyof EstadoPersona; valor: boolean }>();
 
+  protected totales = computed(() => totalesPorPersona(this.resumen(), this.personas()));
+
+  protected color(id: string) {
+    return colorPersona(this.personas(), id);
+  }
+
   protected estado(id: string): EstadoPersona {
     return this.resumen().estados?.[id] ?? { avisado: false, pagado: false };
   }
 
-  protected marcar(persona: string, campo: keyof EstadoPersona, evento: Event) {
-    this.cambiarEstado.emit({ persona, campo, valor: (evento.target as HTMLInputElement).checked });
-  }
-
-  protected totales = computed(() => totalesPorPersona(this.resumen(), this.personas()));
-  protected sinAsignar = computed(() => this.totales().get('')!);
-
-  protected color(id: string) {
-    return colorPersona(this.personas(), id);
+  protected marcar(persona: string, campo: keyof EstadoPersona, valor: boolean) {
+    this.cambiarEstado.emit({ persona, campo, valor });
   }
 
   protected alternar(id: string) {

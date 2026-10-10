@@ -1,17 +1,37 @@
 @if (sesion.usuario(); as usuario) {
   <header class="barra">
     <div class="barra-interior">
-      <a class="marca" routerLink="/">Reparto Visa</a>
-      <nav aria-label="Secciones">
-        <a routerLink="/" [class.activo]="enResumen()">Resumen</a>
-        <a routerLink="/graficos" routerLinkActive="activo">Gráficos</a>
-        <a routerLink="/hogar" routerLinkActive="activo">Hogar</a>
-        <a routerLink="/personas" routerLinkActive="activo">Personas</a>
+      <a class="marca" routerLink="/" aria-label="AFIN, ir a Resumen">
+        <span class="logo" aria-hidden="true">AF</span>
+        <span class="nombre">
+          <strong>AFIN</strong>
+          <small>Administración Financiera</small>
+        </span>
+      </a>
+      <nav class="secciones" aria-label="Secciones">
+        @for (s of secciones; track s.ruta) {
+          <a [routerLink]="s.ruta" [class.activo]="activa(s.ruta)">{{ s.nombre }}</a>
+        }
       </nav>
       <div class="usuario">
-        <span class="ayuda">{{ usuario.email }}</span>
+        <span class="ayuda correo">{{ usuario.email }}</span>
         <app-boton-tema />
-        <button class="boton boton-chico" (click)="sesion.salir()">Salir</button>
+        <details class="menu-cuenta" #menu>
+          <summary class="boton boton-chico" aria-label="Cuenta y ajustes" title="Cuenta y ajustes">
+            <app-icono nombre="ajustes" />
+          </summary>
+          <div class="menu-panel" role="menu">
+            <span class="ayuda">Entraste como</span>
+            <strong class="menu-correo">{{ usuario.email }}</strong>
+            <a role="menuitem" routerLink="/personas" (click)="menu.open = false">
+              <app-icono nombre="personas" /> Personas, tarjetas y respaldo
+            </a>
+            <button role="menuitem" type="button" (click)="menu.open = false; sesion.salir()">
+              <app-icono nombre="salir" /> Salir
+            </button>
+          </div>
+        </details>
+        <button class="boton boton-chico salir" (click)="sesion.salir()">Salir</button>
       </div>
     </div>
   </header>
@@ -26,7 +46,17 @@
   @if (datos.error()) {
     <div class="pagina error-global"><div class="aviso error">{{ datos.error() }}</div></div>
   }
-} @else {
+
+  <!-- En el celular las secciones van abajo, al alcance del pulgar -->
+  <nav class="menu-inferior" aria-label="Secciones">
+    @for (s of secciones; track s.ruta) {
+      <a [routerLink]="s.ruta" [class.activo]="activa(s.ruta)" [attr.aria-current]="activa(s.ruta) ? 'page' : null">
+        <app-icono [nombre]="s.icono" [tamano]="21" />
+        {{ s.nombre }}
+      </a>
+    }
+  </nav>
+} @else if (sesion.usuario() === null) {
   <!-- Sin sesión (login) no hay barra: el sol/luna va solo en la esquina -->
   <div class="tema-suelto"><app-boton-tema /></div>
 }

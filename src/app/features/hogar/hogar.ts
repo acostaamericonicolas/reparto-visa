@@ -2,7 +2,9 @@ import { NgTemplateOutlet } from '@angular/common';
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Hogar } from '../../services/hogar';
-import { nombreMes } from '../../shared/fechas';
+import { mesCorto, nombreMes, sumarMeses } from '../../shared/fechas';
+import { Icono } from '../../shared/componentes/icono/icono';
+import { OpcionMes, SelectorMeses } from '../../shared/componentes/selector-meses/selector-meses';
 import { mesAnterior } from '../../shared/hogar';
 import { AjustesHogar } from './ajustes/ajustes';
 import { FormularioMes } from './formulario-mes/formulario-mes';
@@ -17,7 +19,7 @@ const MES = /^\d{4}-(0[1-9]|1[0-2])$/;
 /** Gastos del hogar: carga del mes, gastos de cada uno, historial, metas y ajustes. */
 @Component({
   selector: 'app-hogar',
-  imports: [NgTemplateOutlet, FormularioMes, ResultadosMes, HistorialHogar, MetasHogar, PersonalHogar, AjustesHogar],
+  imports: [NgTemplateOutlet, FormularioMes, ResultadosMes, HistorialHogar, MetasHogar, PersonalHogar, AjustesHogar, SelectorMeses, Icono],
   templateUrl: './hogar.html',
   styleUrl: './hogar.css',
 })
@@ -46,6 +48,23 @@ export class HogarPagina {
   protected anterior = computed(() => mesAnterior(this.hogar.ids(), this.mesId()));
   protected datosAnterior = computed(() => (this.anterior() ? this.hogar.meses()[this.anterior()!] : undefined));
   protected nombreAnterior = computed(() => (this.anterior() ? nombreMes(this.anterior() + '-01') : ''));
+
+  /**
+   * Meses del selector: los cargados, el elegido, el mes actual y el siguiente al último (para crearlo).
+   * Los que todavía no tienen datos dicen "sin datos".
+   */
+  protected opcionesMeses = computed<OpcionMes[]>(() => {
+    const ids = this.hogar.ids();
+    const hoy = new Date();
+    const actual = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
+    const todos = new Set([...ids, this.mesId(), actual, sumarMeses(ids.at(-1) ?? actual, 1)]);
+    return [...todos].sort().map((id) => ({
+      id,
+      largo: nombreMes(id + '-01'),
+      corto: mesCorto(id + '-01'),
+      detalle: this.hogar.meses()[id] ? '' : 'sin datos',
+    }));
+  });
 
   protected elegirMes(e: Event) {
     const valor = (e.target as HTMLInputElement).value;

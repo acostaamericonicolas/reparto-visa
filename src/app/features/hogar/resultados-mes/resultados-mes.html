@@ -1,12 +1,88 @@
-<div class="indicadores">
-  <div class="indicador"><span class="ayuda">Ingresos del mes</span><strong class="num">{{ r().ingresos | pesos }}</strong></div>
-  <div class="indicador"><span class="ayuda">Gastos compartidos</span><strong class="num">{{ r().compartidos | pesos }}</strong></div>
-  <div class="indicador"><span class="ayuda">Ahorro en USD</span><strong class="num">US$ {{ r().usd }}</strong></div>
-  <div class="indicador destacado"><span class="ayuda">Libre para cada uno</span><strong class="num">{{ r().libre | pesos }}</strong></div>
-</div>
+<!-- Tarjeta principal del mes -->
+<section class="hero s-hero" aria-label="Resumen del mes">
+  <div class="hero-cabecera">
+    <span class="hero-etiqueta">Libre para cada uno</span>
+    @if (todoPagado()) {
+      <span class="hero-chip listo">Todo pagado</span>
+    } @else {
+      <span class="hero-chip">Falta pagar {{ faltaTotal() | pesos }}</span>
+    }
+  </div>
+  <div class="hero-monto">{{ r().libre | pesos }}</div>
+  <div class="hero-barra" role="progressbar" aria-label="Compartido pagado" [attr.aria-valuenow]="porcentajePagado()"
+       aria-valuemin="0" aria-valuemax="100"><span [style.width.%]="porcentajePagado()"></span></div>
+  <div class="hero-sub">{{ porcentajePagado() }} % de lo compartido ya está pagado</div>
+  <div class="hero-datos">
+    <div><span>Ingresos del mes</span><strong>{{ r().ingresos | pesos }}</strong></div>
+    <div><span>Gastos compartidos</span><strong>{{ r().compartidos | pesos }}</strong></div>
+    <div><span>Ahorro en USD</span><strong>US$ {{ r().usd }}</strong></div>
+    <div><span>Libre para cada uno</span><strong class="libre">{{ r().libre | pesos }}</strong></div>
+  </div>
+</section>
 
-<section class="panel bloque">
-  <h2>Qué falta pagar</h2>
+<section class="panel bloque s-aporte">
+  <h2>Cuánto pone cada uno</h2>
+  <div class="transferencias">
+    @for (q of quienes; track q) {
+      <div class="indicador">
+        <span class="ayuda">{{ nombres()[q] }} {{ r()[q].neto < 0 ? 'recibe' : 'transfiere' }}</span>
+        <strong class="num" [class.recibe]="r()[q].neto < 0">{{ (r()[q].neto < 0 ? -r()[q].neto : r()[q].neto) | pesos }}</strong>
+        <span class="ayuda">{{ r()[q].neto < 0 ? 'de la cuenta común' : 'a la cuenta común' }}</span>
+      </div>
+    }
+  </div>
+  <details class="desplegable" [open]="pantallaAncha">
+    <summary>Ver el cálculo</summary>
+    <div class="desplazable">
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            @for (q of quienes; track q) { <th class="num">{{ nombres()[q] }}</th> }
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Sueldo</td>@for (q of quienes; track q) { <td class="num">{{ r()[q].sueldo | pesos }}</td> }</tr>
+          @if (r().nico.extras > 0 || r().nanu.extras > 0) {
+            <tr><td>Extras (aguinaldo…)</td>@for (q of quienes; track q) { <td class="num">{{ r()[q].extras | pesos }}</td> }</tr>
+          }
+          <tr><td>Tarjeta (lo personal)</td>@for (q of quienes; track q) { <td class="num">− {{ r()[q].tarjeta | pesos }}</td> }</tr>
+          <tr><td>Libre</td>@for (q of quienes; track q) { <td class="num">− {{ r()[q].libre | pesos }}</td> }</tr>
+          <tr class="fuerte"><td>Aporte a gastos compartidos</td>@for (q of quienes; track q) { <td class="num">{{ r()[q].aporte | pesos }}</td> }</tr>
+          <tr><td>Ya adelantó</td>@for (q of quienes; track q) { <td class="num">− {{ r()[q].adelantado | pesos }}</td> }</tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td>Transferir a la cuenta común</td>
+            @for (q of quienes; track q) { <td class="num" [class.recibe]="r()[q].neto < 0">{{ r()[q].neto | pesos }}</td> }
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <p class="ayuda">
+      Aporte neto = su parte de los gastos − lo que ya pagó de su bolsillo o con su tarjeta.
+      @for (q of quienes; track q) {
+        @if (r()[q].neto < 0) { A {{ nombres()[q] }} le corresponde recibir {{ -r()[q].neto | pesos }}. }
+      }
+    </p>
+    @if (hayCompartidoEnTarjeta()) {
+      @for (q of quienes; track q) {
+        @if (r()[q].tarjetaCompartida > 0) {
+          <p class="ayuda">
+            De los {{ r()[q].tarjetaTotal | pesos }} de la tarjeta de {{ nombres()[q] }}, {{ r()[q].tarjetaCompartida | pesos }} son gastos
+            compartidos: se cuentan como compartidos y no como personales.
+          </p>
+        }
+      }
+    }
+  </details>
+</section>
+
+<section class="panel bloque s-falta">
+  <div class="titulo-fila">
+    <h2>Qué falta pagar</h2>
+    @if (!todoPagado()) { <strong class="num falta">{{ faltaTotal() | pesos }}</strong> }
+  </div>
   @if (todoPagado()) {
     <p class="todo-pagado">Todo está pagado ✓</p>
   } @else {
@@ -15,112 +91,89 @@
       <div class="indicador" [class.pendiente]="pagos().faltaCompartido > 0"><span class="ayuda">Compartido: falta</span><strong class="num">{{ pagos().faltaCompartido | pesos }}</strong></div>
       <div class="indicador" [class.pendiente]="pagos().faltaTarjetas > 0"><span class="ayuda">Tarjetas: falta</span><strong class="num">{{ pagos().faltaTarjetas | pesos }}</strong></div>
     </div>
+    <!-- La tilde marca como pagado sin abrir el gasto -->
     <ul class="faltan">
       @for (g of pagos().gastos; track g.id) {
-        <li><span class="crece">{{ g.concepto }}</span><span class="num">{{ g.falta | pesos }}</span></li>
+        <li>
+          <label class="crece tilde"><input type="checkbox" (change)="marcarGasto(g.id)" />{{ g.concepto }}</label>
+          <span class="num">{{ g.falta | pesos }}</span>
+        </li>
       }
       @if (pagos().usd.falta > 0) {
-        <li><span class="crece">Dólares (US$ {{ pagos().usd.falta }} sin comprar)</span><span class="num">{{ pagos().usd.faltaPesos | pesos }}</span></li>
+        <li>
+          <label class="crece tilde"><input type="checkbox" (change)="marcarDolares()" />Dólares (US$ {{ pagos().usd.falta }} sin comprar)</label>
+          <span class="num">{{ pagos().usd.faltaPesos | pesos }}</span>
+        </li>
       }
       @for (q of quienes; track q) {
         @if (pagos().tarjetas[q].monto > 0 && !pagos().tarjetas[q].pagada) {
-          <li><span class="crece">Tarjeta de {{ nombres()[q] }}</span><span class="num">{{ pagos().tarjetas[q].monto | pesos }}</span></li>
+          <li>
+            <label class="crece tilde"><input type="checkbox" (change)="marcarTarjeta(q)" />Tarjeta de {{ nombres()[q] }}</label>
+            <span class="num">{{ pagos().tarjetas[q].monto | pesos }}</span>
+          </li>
         }
       }
     </ul>
+    <p class="ayuda">La tilde lo marca como pagado. Para corregir el monto, abrilo en Gastos compartidos.</p>
   }
 </section>
 
-<section class="panel bloque">
-  <h2>Cuánto pone cada uno</h2>
-  <div class="desplazable">
-    <table>
-      <thead>
-        <tr>
-          <th></th>
-          @for (q of quienes; track q) { <th class="num">{{ nombres()[q] }}</th> }
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td>Sueldo</td>@for (q of quienes; track q) { <td class="num">{{ r()[q].sueldo | pesos }}</td> }</tr>
-        @if (r().nico.extras > 0 || r().nanu.extras > 0) {
-          <tr><td>Extras (aguinaldo…)</td>@for (q of quienes; track q) { <td class="num">{{ r()[q].extras | pesos }}</td> }</tr>
-        }
-        <tr><td>Tarjeta (lo personal)</td>@for (q of quienes; track q) { <td class="num">− {{ r()[q].tarjeta | pesos }}</td> }</tr>
-        <tr><td>Libre</td>@for (q of quienes; track q) { <td class="num">− {{ r()[q].libre | pesos }}</td> }</tr>
-        <tr class="fuerte"><td>Aporte a gastos compartidos</td>@for (q of quienes; track q) { <td class="num">{{ r()[q].aporte | pesos }}</td> }</tr>
-        <tr><td>Ya adelantó</td>@for (q of quienes; track q) { <td class="num">− {{ r()[q].adelantado | pesos }}</td> }</tr>
-      </tbody>
-      <tfoot>
-        <tr>
-          <td>Transferir a la cuenta común</td>
-          @for (q of quienes; track q) { <td class="num" [class.recibe]="r()[q].neto < 0">{{ r()[q].neto | pesos }}</td> }
-        </tr>
-      </tfoot>
-    </table>
-  </div>
-  <p class="ayuda">
-    Aporte neto = su parte de los gastos − lo que ya pagó de su bolsillo o con su tarjeta.
-    @for (q of quienes; track q) {
-      @if (r()[q].neto < 0) { A {{ nombres()[q] }} le corresponde recibir {{ -r()[q].neto | pesos }}. }
-    }
-  </p>
-  @if (hayCompartidoEnTarjeta()) {
-    @for (q of quienes; track q) {
-      @if (r()[q].tarjetaCompartida > 0) {
-        <p class="ayuda">
-          De los {{ r()[q].tarjetaTotal | pesos }} de la tarjeta de {{ nombres()[q] }}, {{ r()[q].tarjetaCompartida | pesos }} son gastos
-          compartidos: se cuentan como compartidos y no como personales.
-        </p>
-      }
-    }
-  }
-</section>
-
-<section class="panel bloque">
-  <h2>Estimado vs. real</h2>
-  <div class="desplazable">
-    <table>
-      <thead><tr><th>Categoría</th><th class="num">Estimado</th><th class="num">Real</th><th class="num">Dif.</th></tr></thead>
-      <tbody>
-        @for (f of evv().filas; track f.nombre) {
-          <tr [class.pasado]="f.pasado">
-            <td>{{ f.nombre }}</td>
-            <td class="num">{{ f.estimado ? (f.estimado | pesos) : '–' }}</td>
-            <td class="num">{{ f.real ? (f.real | pesos) : '–' }}</td>
-            <td class="num">{{ f.estimado ? (f.diferencia | pesos) : '' }}</td>
+<details class="tarjeta-desplegable s-evv">
+  <summary>
+    <h2>Estimado vs. real</h2>
+    <span class="resumen" [class.pasado]="pasadas().length">
+      {{ pasadas().length ? pasadas().length + ' categoría' + (pasadas().length > 1 ? 's pasadas' : ' pasada') : 'Tabla por categoría y gráfico' }}
+    </span>
+  </summary>
+  <div class="contenido">
+    <div class="desplazable">
+      <table>
+        <thead><tr><th>Categoría</th><th class="num">Estimado</th><th class="num">Real</th><th class="num">Dif.</th></tr></thead>
+        <tbody>
+          @for (f of evv().filas; track f.nombre) {
+            <tr [class.pasado]="f.pasado">
+              <td>{{ f.nombre }}</td>
+              <td class="num">{{ f.estimado ? (f.estimado | pesos) : '–' }}</td>
+              <td class="num">{{ f.real ? (f.real | pesos) : '–' }}</td>
+              <td class="num">{{ f.estimado ? (f.diferencia | pesos) : '' }}</td>
+            </tr>
+          }
+        </tbody>
+        <tfoot>
+          <tr [class.pasado]="hayEstimados() && diferenciaTotal() > 0">
+            <td>Total</td>
+            <td class="num">{{ evv().estimado | pesos }}</td>
+            <td class="num">{{ evv().real | pesos }}</td>
+            <td class="num">{{ hayEstimados() ? (diferenciaTotal() | pesos) : '' }}</td>
           </tr>
-        }
-      </tbody>
-      <tfoot>
-        <tr [class.pasado]="hayEstimados() && diferenciaTotal() > 0">
-          <td>Total</td>
-          <td class="num">{{ evv().estimado | pesos }}</td>
-          <td class="num">{{ evv().real | pesos }}</td>
-          <td class="num">{{ hayEstimados() ? (diferenciaTotal() | pesos) : '' }}</td>
-        </tr>
-      </tfoot>
-    </table>
-  </div>
-  @if (pasadas().length) { <p class="aviso advertencia">Categorías pasadas: {{ pasadas().join(', ') }}.</p> }
-  @if (evv().pendientes) {
-    <p class="ayuda">{{ evv().pendientes }} gasto{{ evv().pendientes > 1 ? 's' : '' }} con algo todavía por pagar.</p>
-  }
-  <app-grafico [etiquetas]="etiquetas()" [series]="series()" [apilado]="false" descripcion="Barras con el estimado y el real de cada categoría" />
-</section>
-
-<section class="panel bloque">
-  <h2>A dónde va el sueldo</h2>
-  <app-grafico-torta [etiquetas]="tortaEtiquetas()" [valores]="tortaValores()" [colores]="tortaColores()"
-                     descripcion="Torta con el destino del sueldo: gastos compartidos, ahorro en dólares, tarjetas y lo libre" />
-  <ul class="leyenda">
-    @for (p of distribucion(); track p.nombre) {
-      <li>
-        <span class="punto" [style.background]="p.color"></span>
-        <span class="crece">{{ p.nombre }}</span>
-        <span class="num">{{ p.monto | pesos }}</span>
-        <span class="num porcentaje">{{ p.porcentaje.toFixed(1).replace('.', ',') }}%</span>
-      </li>
+        </tfoot>
+      </table>
+    </div>
+    @if (pasadas().length) { <p class="aviso advertencia">Categorías pasadas: {{ pasadas().join(', ') }}.</p> }
+    @if (evv().pendientes) {
+      <p class="ayuda">{{ evv().pendientes }} gasto{{ evv().pendientes > 1 ? 's' : '' }} con algo todavía por pagar.</p>
     }
-  </ul>
-</section>
+    <app-grafico [etiquetas]="etiquetas()" [series]="series()" [apilado]="false" descripcion="Barras con el estimado y el real de cada categoría" />
+  </div>
+</details>
+
+<details class="tarjeta-desplegable s-torta">
+  <summary>
+    <h2>A dónde va el sueldo</h2>
+    <span class="resumen">Compartidos, ahorro, tarjetas y libre</span>
+  </summary>
+  <div class="contenido">
+    <app-grafico-torta [etiquetas]="tortaEtiquetas()" [valores]="tortaValores()" [colores]="tortaColores()"
+                       descripcion="Torta con el destino del sueldo: gastos compartidos, ahorro en dólares, tarjetas y lo libre" />
+    <ul class="leyenda">
+      @for (p of distribucion(); track p.nombre) {
+        <li>
+          <span class="punto" [style.background]="p.color"></span>
+          <span class="crece">{{ p.nombre }}</span>
+          <span class="num">{{ p.monto | pesos }}</span>
+          <span class="num porcentaje">{{ p.porcentaje.toFixed(1).replace('.', ',') }}%</span>
+        </li>
+      }
+    </ul>
+  </div>
+</details>

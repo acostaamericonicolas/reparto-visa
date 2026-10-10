@@ -4,12 +4,15 @@
     <span>Creá el primer mes desde la pestaña Mes.</span>
   </section>
 } @else {
-  <div class="indicadores">
-    <div class="indicador"><span class="ayuda">Meses registrados</span><strong class="num">{{ meses().length }}</strong></div>
-    <div class="indicador"><span class="ayuda">USD ahorrados en total</span><strong class="num">US$ {{ totalUsd() }}</strong></div>
-    <div class="indicador"><span class="ayuda">Gasto compartido promedio</span><strong class="num">{{ promedioCompartidos() | pesos }}</strong></div>
-    <div class="indicador destacado"><span class="ayuda">Libre promedio c/u</span><strong class="num">{{ promedioLibre() | pesos }}</strong></div>
-  </div>
+  <section class="hero" aria-label="Promedios de todos los meses">
+    <span class="hero-etiqueta">Libre promedio para cada uno</span>
+    <div class="hero-monto">{{ promedioLibre() | pesos }}</div>
+    <div class="hero-datos">
+      <div><span>Meses registrados</span><strong>{{ meses().length }}</strong></div>
+      <div><span>USD ahorrados en total</span><strong>US$ {{ totalUsd() }}</strong></div>
+      <div><span>Gasto compartido promedio</span><strong>{{ promedioCompartidos() | pesos }}</strong></div>
+    </div>
+  </section>
 
   <section class="panel bloque">
     <h2>Ingresos, gastos y ahorro por mes</h2>

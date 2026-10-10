@@ -1,22 +1,25 @@
 <main class="pagina">
   <header class="encabezado">
-    <div>
-      <h1>Hogar</h1>
-      <p class="ayuda">Gastos compartidos, ahorro y reparto del mes.</p>
-    </div>
-    <div class="controles">
-      <div class="selector" role="group" aria-label="Sección">
-        @for (v of vistas; track v.id) {
-          <button class="boton boton-chico" type="button" [attr.aria-pressed]="vista() === v.id" (click)="vista.set(v.id)">{{ v.nombre }}</button>
-        }
-      </div>
-      @if (vista() === 'mes' || vista() === 'personal' || vista() === 'ajustes') {
-        <label class="mes">Mes
-          <input type="month" [value]="mesId()" (change)="elegirMes($event)" />
-        </label>
-      }
-    </div>
+    <h1>Hogar</h1>
+    <p class="ayuda">Gastos compartidos, ahorro y reparto del mes.</p>
   </header>
+
+  <div class="chips deslizables" role="group" aria-label="Sección">
+    @for (v of vistas; track v.id) {
+      <button class="chip" type="button" [attr.aria-pressed]="vista() === v.id" (click)="vista.set(v.id)">{{ v.nombre }}</button>
+    }
+  </div>
+
+  @if (vista() === 'mes' || vista() === 'personal' || vista() === 'ajustes') {
+    <div class="meses">
+      <app-selector-meses [meses]="opcionesMeses()" [actual]="mesId()" (elegir)="irA($event)" />
+      <!-- Para ir a cualquier otro mes (por ejemplo, cargar uno viejo) -->
+      <label class="otro-mes" title="Elegir otro mes">
+        <app-icono nombre="calendario" etiqueta="Elegir otro mes" />
+        <input type="month" [value]="mesId()" (change)="elegirMes($event)" aria-label="Elegir otro mes" />
+      </label>
+    </div>
+  }
 
   @if (hogar.error()) { <div class="aviso error">{{ hogar.error() }}</div> }
 
@@ -26,9 +29,10 @@
     @switch (vista()) {
       @case ('mes') {
         @if (datosMes(); as m) {
-          <div class="columnas">
+          <!-- Una sola grilla: las secciones del formulario y de los resultados se ordenan con `order` -->
+          <div class="grilla-mes">
             <app-formulario-mes [id]="mesId()" [mes]="m" [anterior]="datosAnterior()" [nombreAnterior]="nombreAnterior()" />
-            <app-resultados-mes [mes]="m" />
+            <app-resultados-mes [id]="mesId()" [mes]="m" />
           </div>
         } @else {
           <ng-container *ngTemplateOutlet="sinMes" />

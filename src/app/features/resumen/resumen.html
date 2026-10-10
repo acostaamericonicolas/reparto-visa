@@ -1,36 +1,8 @@
 <main class="pagina">
-  <header class="encabezado">
-    <div>
-      <h1>Resumen</h1>
-      @if (resumen(); as r) {
-        <p class="ayuda">
-          Cierre {{ r.meta.cierre }} · vence {{ r.meta.vence || '—' }} · saldo {{ r.meta.saldo | pesos }}
-          @if (r.meta.saldoUsd) { + {{ r.meta.saldoUsd | dolares }} }
-        </p>
-      }
-    </div>
-    <div class="acciones">
-      @if (editandoAlias()) {
-        <form class="fila" novalidate (submit)="guardarAlias($event)">
-          <input type="text" id="alias" placeholder="Alias para transferir" aria-label="Alias para transferir"
-                 autocomplete="off" [formField]="fAlias.alias" />
-          <button class="boton" type="submit">Guardar</button>
-          <button class="boton-link" type="button" (click)="editandoAlias.set(false)">Cancelar</button>
-        </form>
-      } @else {
-        <button class="boton" type="button" (click)="editarAlias()" title="Se agrega al final del detalle que copiás para cada persona">
-          {{ datos.config().alias ? 'Alias: ' + datos.config().alias : 'Agregar alias' }}
-        </button>
-      }
-      <label class="boton boton-primario" [class.ocupado]="importando()">
-        {{ importando() ? 'Importando…' : 'Importar PDF del resumen' }}
-        <input type="file" accept="application/pdf" (change)="importar($event)" [disabled]="importando()" hidden />
-      </label>
-    </div>
-  </header>
+  <input #archivo type="file" accept="application/pdf" (change)="importar($event)" hidden />
 
-  @if (lista().length) {
-    <app-pestanas-meses [resumenes]="lista()" [actual]="mesId()" />
+  @if (opcionesMeses().length) {
+    <app-selector-meses [meses]="opcionesMeses()" [actual]="mesId()" (elegir)="irAMes($event)" />
   }
 
   @if (estado(); as e) {
@@ -56,6 +28,73 @@
   @if (datos.cargando()) {
     <div class="vacio">Cargando…</div>
   } @else if (resumen(); as r) {
+    <div class="cabecera">
+      <!-- Tarjeta principal: el saldo del cierre -->
+      <section class="hero saldo" aria-label="Saldo del cierre">
+        <div class="hero-cabecera">
+          <span class="hero-etiqueta">Saldo del cierre</span>
+          @if (vencimiento(); as v) { <span class="hero-chip" [class.listo]="v.listo">{{ v.texto }}</span> }
+        </div>
+        <div class="saldo-fila">
+          <div>
+            <div class="hero-monto">{{ r.meta.saldo | pesos }}</div>
+            <div class="hero-sub">
+              @if (r.meta.saldoUsd) { + {{ r.meta.saldoUsd | dolares }} · }
+              cierre {{ r.meta.cierre }} · vence {{ r.meta.vence || '—' }}
+            </div>
+          </div>
+        </div>
+        <div class="hero-barra" role="progressbar" aria-label="Cobrado del mes" [attr.aria-valuenow]="cobranza().porcentaje"
+             aria-valuemin="0" aria-valuemax="100"><span [style.width.%]="cobranza().porcentaje"></span></div>
+        <div class="saldo-pie">
+          <span class="hero-sub">
+            {{ cobranza().pagaron }} de {{ cobranza().personas }} {{ cobranza().pagaron === 1 ? 'pagó' : 'pagaron' }}
+            @if (cobranza().cobrado) { · {{ cobranza().cobrado | pesos }} cobrado }
+          </span>
+          <button class="hero-boton" type="button" [disabled]="importando()" (click)="archivo.click()">
+            <app-icono nombre="subir" [tamano]="16" />{{ importando() ? 'Importando…' : 'Importar PDF' }}
+          </button>
+        </div>
+      </section>
+
+      <div class="datos">
+        <div class="dato">
+          <span><app-icono nombre="personas" [tamano]="14" /> Personas</span>
+          <strong>{{ cobranza().personas }}</strong>
+          <span>{{ cobranza().avisadas }} avisada{{ cobranza().avisadas === 1 ? '' : 's' }} · {{ cobranza().pagaron }} {{ cobranza().pagaron === 1 ? 'pagó' : 'pagaron' }}</span>
+        </div>
+        <!-- Tocarla muestra lo que falta asignar en Movimientos -->
+        <button class="dato" type="button" [class.ok]="!sinAsignar().items" [class.pendiente]="sinAsignar().items"
+                [attr.aria-pressed]="filtro() === ''" (click)="elegirPersona(filtro() === '' ? 'todos' : '')">
+          <span><app-icono nombre="ok" [tamano]="14" /> Asignaciones</span>
+          <strong>{{ sinAsignar().items ? sinAsignar().items + ' sin asignar' : 'Todo al día' }}</strong>
+          <span>
+            @if (sinAsignar().items) {
+              {{ sinAsignar().pesos | pesos }}@if (sinAsignar().usd) { + {{ sinAsignar().usd | dolares }} } · tocá para verlos
+            } @else {
+              0 sin asignar
+            }
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <div class="titulo-personas">
+      <h2>Personas</h2>
+      @if (editandoAlias()) {
+        <form class="fila" novalidate (submit)="guardarAlias($event)">
+          <input type="text" id="alias" placeholder="Alias para transferir" aria-label="Alias para transferir"
+                 autocomplete="off" [formField]="fAlias.alias" />
+          <button class="boton boton-chico" type="submit">Guardar</button>
+          <button class="boton-link" type="button" (click)="editandoAlias.set(false)">Cancelar</button>
+        </form>
+      } @else {
+        <button class="boton-link alias" type="button" (click)="editarAlias()" title="Se agrega al final del detalle que copiás para cada persona">
+          {{ datos.config().alias ? 'Alias: ' + datos.config().alias : 'Agregar alias' }} <app-icono nombre="lapiz" [tamano]="14" />
+        </button>
+      }
+    </div>
+
     <app-totales-personas [resumen]="r" [personas]="datos.personas()" [filtro]="filtro()" (filtroChange)="elegirPersona($event)" (copiar)="copiar($event)"
                           (cambiarEstado)="datos.cambiarEstado(r.meta.id, $event.persona, $event.campo, $event.valor)" />
 
@@ -65,6 +104,8 @@
         <h2>Movimientos ({{ r.rows.length }})</h2>
         @if (filtro() !== 'todos') {
           <span class="ayuda">· {{ filtro() === '' ? 'Sin asignar' : nombreFiltro() }}</span>
+        } @else {
+          <span class="ayuda resumen-mov">{{ sinAsignar().items ? sinAsignar().items + ' sin asignar' : 'Todo asignado' }} · tocá una persona para ver sus ítems</span>
         }
       </summary>
       <div class="cabecera-tabla">
@@ -81,7 +122,10 @@
   } @else {
     <section class="panel vacio">
       <strong>Todavía no hay ningún resumen cargado</strong>
-      <span>Tocá “Importar PDF del resumen” y elegí el PDF que te manda el banco (Visa ICBC).</span>
+      <span>Importá el PDF que te manda el banco (Visa ICBC) y se arma la tabla sola.</span>
+      <button class="boton boton-primario" type="button" [disabled]="importando()" (click)="archivo.click()">
+        {{ importando() ? 'Importando…' : 'Importar PDF del resumen' }}
+      </button>
     </section>
   }
 </main>

@@ -1,7 +1,13 @@
 <main class="pagina">
   <section class="panel login">
-    <h1>Reparto Visa</h1>
-    <p>Repartí el resumen de la tarjeta entre las personas que la usan.</p>
+    <div class="marca">
+      <span class="logo" aria-hidden="true">AF</span>
+      <div>
+        <h1>AFIN</h1>
+        <span class="ayuda">Administración Financiera</span>
+      </div>
+    </div>
+    <p>Repartí el resumen de la tarjeta y organizá los gastos del hogar.</p>
     <button class="boton boton-primario" (click)="sesion.entrar()">Entrar con Google</button>
     <p class="ayuda">{{ sesion.mensaje() || 'Los gastos solo los ven las cuentas autorizadas.' }}</p>
 

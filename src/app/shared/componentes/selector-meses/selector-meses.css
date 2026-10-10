@@ -1,0 +1,88 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+.selector {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+/* La tira se desliza y frena con un mes en el centro; los bordes se desvanecen */
+.tira {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  padding: 6px 0;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+}
+.tira::-webkit-scrollbar {
+  display: none;
+}
+/* Espacio a los costados para que el primero y el último también puedan quedar centrados */
+.borde {
+  flex: none;
+  width: calc(50% - 50px);
+}
+.mes {
+  scroll-snap-align: center;
+  flex: none;
+  display: grid;
+  justify-items: center;
+  line-height: 1.15;
+  border: 1px solid var(--linea);
+  background: var(--superficie);
+  color: var(--texto-2);
+  border-radius: 999px;
+  padding: 6px 13px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, padding 0.2s;
+}
+.mes small {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--aviso);
+}
+.mes.elegido {
+  background: var(--hero-fondo);
+  border-color: var(--hero-fondo);
+  color: #fff;
+  font: 700 15px var(--f-titulo);
+  padding: 8px 20px;
+}
+.mes.elegido small {
+  font-family: var(--f-texto);
+  color: var(--hero-aviso);
+}
+.flecha {
+  flex: none;
+  border: 1px solid var(--linea);
+  background: var(--superficie);
+  color: var(--texto-2);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.flecha:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+/* En el celular se desliza con el dedo: las flechas sobran */
+@media (max-width: 700px) {
+  .flecha {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mes {
+    transition: none;
+  }
+}

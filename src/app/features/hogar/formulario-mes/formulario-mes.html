@@ -1,5 +1,9 @@
-<section class="panel bloque">
-  <h2>Sueldos</h2>
+<details class="tarjeta-desplegable s-sueldos">
+  <summary>
+    <h2>Sueldos</h2>
+    <span class="resumen">@for (q of quienes; track q; let ultimo = $last) { {{ nombres()[q] }} {{ ingreso(q) | pesos }}@if (!ultimo) { · } }</span>
+  </summary>
+  <div class="contenido">
   <div class="dos">
     @for (q of quienes; track q) {
       <div class="persona">
@@ -21,10 +25,15 @@
     }
   </div>
   <p class="ayuda">Los extras valen solo para este mes y se suman al sueldo.</p>
-</section>
+  </div>
+</details>
 
-<section class="panel bloque">
-  <h2>Ahorro en USD</h2>
+<details class="tarjeta-desplegable s-ahorro">
+  <summary>
+    <h2>Ahorro en USD</h2>
+    <span class="resumen">US$ {{ mes().usd.comprados ?? mes().usd.planificados }} {{ mes().usd.comprados !== null ? 'comprados' : 'planificados' }} · {{ usdEnPesos() | pesos }}</span>
+  </summary>
+  <div class="contenido">
   <div class="dos">
     <label>USD planificados
       <input type="text" inputmode="decimal" [value]="mes().usd.planificados || ''" (change)="ahorro('planificados', $event)" />
@@ -55,9 +64,10 @@
     <summary>Comparar cotizaciones</summary>
     <app-cotizaciones [actual]="mes().usd.cotizacion" (elegida)="cotizacionElegida($event)" />
   </details>
-</section>
+  </div>
+</details>
 
-<section class="panel bloque">
+<section class="panel bloque s-gastos">
   <div class="titulo-gastos">
     <h2>Gastos compartidos</h2>
     <span class="ayuda">{{ mes().gastos.length }} gastos · <strong class="num">{{ totalGastos() | pesos }}</strong></span>
@@ -162,8 +172,12 @@
   </p>
 </section>
 
-<section class="panel bloque">
-  <h2>Tarjetas de crédito (individual)</h2>
+<details class="tarjeta-desplegable s-tarjetas">
+  <summary>
+    <h2>Tarjetas de crédito (individual)</h2>
+    <span class="resumen">@for (q of quienes; track q; let ultimo = $last) { {{ nombres()[q] }} {{ mes().tarjetas[q] | pesos }}@if (mes().tarjetasPagadas[q]) { ✓ }@if (!ultimo) { · } }</span>
+  </summary>
+  <div class="contenido">
   <div class="dos">
     @for (q of quienes; track q) {
       <div class="persona">
@@ -200,9 +214,15 @@
     }
   }
   <p class="ayuda">Si un gasto compartido va en la tarjeta (por ejemplo un seguro), elegí "Tarjeta de …" en ese gasto y no se cuenta dos veces.</p>
-</section>
+  </div>
+</details>
 
-<section class="panel bloque">
-  <h2>Notas del mes</h2>
+<details class="tarjeta-desplegable s-notas">
+  <summary>
+    <h2>Notas del mes</h2>
+    <span class="resumen">{{ mes().notas ? (mes().notas.length > 40 ? mes().notas.slice(0, 40) + '…' : mes().notas) : 'Sin notas' }}</span>
+  </summary>
+  <div class="contenido">
   <textarea rows="4" placeholder="Cosas para recordar, gastos puntuales, acuerdos…" [value]="mes().notas" (change)="notas($event)"></textarea>
-</section>
+  </div>
+</details>

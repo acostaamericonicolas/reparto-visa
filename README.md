@@ -1,6 +1,6 @@
-# Reparto Visa
+# AFIN · Administración Financiera
 
-App web para repartir el resumen de la tarjeta Visa ICBC entre las personas que la usan.
+App web para repartir el resumen de la tarjeta Visa ICBC entre las personas que la usan y organizar los gastos del hogar.
 
 - Importa el PDF del resumen y arma la tabla (fecha, detalle, cuota, pesos, dólares), controlando que cada tarjeta sume lo mismo que informa el banco.
 - Cada ítem se asigna a una persona o se divide entre varias.

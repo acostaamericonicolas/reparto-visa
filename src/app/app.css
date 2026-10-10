@@ -1,3 +1,4 @@
+/* Barra superior: marca, secciones (en la compu), tema, cuenta */
 .barra {
   background: var(--superficie);
   border-bottom: 1px solid var(--linea);
@@ -10,44 +11,157 @@
   margin: 0 auto;
   padding-inline: 16px;
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   gap: 4px 20px;
-  min-height: 52px;
+  min-height: 58px;
 }
 .marca {
-  font: 700 18px var(--f-titulo);
+  display: flex;
+  align-items: center;
+  gap: 10px;
   color: var(--texto);
   text-decoration: none;
 }
-nav {
+.logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--hero-fondo);
+  color: var(--hero-acento);
+  display: grid;
+  place-items: center;
+  font: 700 13px var(--f-titulo);
+  flex: none;
+}
+.nombre {
+  display: grid;
+  line-height: 1.1;
+}
+.nombre strong {
+  font: 700 18px var(--f-titulo);
+  letter-spacing: 0.03em;
+}
+.nombre small {
+  font-size: 11px;
+  color: var(--texto-2);
+}
+.secciones {
   display: flex;
   gap: 4px;
   flex: 1;
+  align-self: stretch;
 }
-nav a {
-  padding: 15px 10px 12px;
+.secciones a {
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
   color: var(--texto-2);
   text-decoration: none;
   border-bottom: 3px solid transparent;
 }
-nav a.activo {
+.secciones a.activo {
   color: var(--texto);
+  font-weight: 600;
   border-bottom-color: var(--acento);
 }
 .usuario {
   display: flex;
   gap: 8px;
   align-items: center;
+  margin-left: auto;
 }
 .error-global {
   padding-block: 12px 0;
 }
-@media (max-width: 600px) {
-  .usuario .ayuda {
+
+/* Menú del engranaje: cuenta, personas y salir */
+.menu-cuenta {
+  position: relative;
+}
+.menu-cuenta > summary {
+  list-style: none;
+  display: inline-flex;
+  padding: 5px 7px;
+}
+.menu-cuenta > summary::-webkit-details-marker {
+  display: none;
+}
+.menu-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 10;
+  width: 260px;
+  max-width: calc(100vw - 24px);
+  background: var(--superficie);
+  border: 1px solid var(--linea);
+  border-radius: var(--radio-tarjeta);
+  padding: 12px;
+  display: grid;
+  gap: 6px;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.18);
+}
+.menu-correo {
+  font-size: 13px;
+  overflow-wrap: anywhere;
+  margin-bottom: 4px;
+}
+.menu-panel a,
+.menu-panel button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 8px;
+  border: 0;
+  background: none;
+  color: var(--texto);
+  text-decoration: none;
+  cursor: pointer;
+  text-align: left;
+}
+.menu-panel a:hover,
+.menu-panel button:hover {
+  background: var(--acento-suave);
+}
+
+/* Menú inferior: solo en el celular */
+.menu-inferior {
+  display: none;
+}
+@media (max-width: 700px) {
+  .secciones,
+  .correo,
+  .salir {
     display: none;
   }
+  .menu-inferior {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 6;
+    background: var(--superficie);
+    border-top: 1px solid var(--linea);
+    padding: 6px 0 calc(6px + env(safe-area-inset-bottom, 0px));
+    min-height: var(--alto-menu);
+  }
+  .menu-inferior a {
+    display: grid;
+    justify-items: center;
+    gap: 2px;
+    font-size: 11px;
+    color: var(--texto-2);
+    text-decoration: none;
+  }
+  .menu-inferior a.activo {
+    color: var(--acento);
+    font-weight: 600;
+  }
 }
+
 /* Sol/luna en el login, donde no hay barra superior */
 .tema-suelto {
   position: fixed;

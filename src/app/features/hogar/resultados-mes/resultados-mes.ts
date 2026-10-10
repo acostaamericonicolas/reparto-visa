@@ -15,7 +15,12 @@ import { r2 } from '../../../shared/montos';
   styleUrl: './resultados-mes.css',
 })
 export class ResultadosMes {
+  /** "2026-10": para guardar las tildes de "Qué falta pagar". */
+  id = input.required<string>();
   mes = input.required<MesHogar>();
+
+  /** En la compu "Ver el cálculo" arranca abierto; en el celular, cerrado. */
+  protected readonly pantallaAncha = window.matchMedia('(min-width: 900px)').matches;
 
   protected hogar = inject(Hogar);
   protected readonly quienes: Quien[] = ['nico', 'nanu'];
@@ -30,6 +35,35 @@ export class ResultadosMes {
   protected hayEstimados = computed(() => this.evv().filas.some((f) => f.estimado > 0));
   /** Todo lo compartido y las tarjetas están pagados. */
   protected todoPagado = computed(() => this.pagos().faltaCompartido === 0 && this.pagos().faltaTarjetas === 0);
+  /** Lo que falta pagar en total (compartido y tarjetas), para el chip de la tarjeta principal. */
+  protected faltaTotal = computed(() => r2(this.pagos().faltaCompartido + this.pagos().faltaTarjetas));
+  /** Qué parte de lo compartido ya está pagada, para la barra. */
+  protected porcentajePagado = computed(() => {
+    const p = this.pagos();
+    const total = p.pagadoCompartido + p.faltaCompartido;
+    return total > 0 ? Math.round((p.pagadoCompartido / total) * 100) : 0;
+  });
+
+  // ---------- Tildes de "Qué falta pagar" ----------
+  /** Igual que la tilde del gasto: queda pagado y, si no tenía monto, toma el estimado. */
+  protected marcarGasto(gastoId: string) {
+    this.hogar.actualizar(this.id(), (m) => {
+      const g = m.gastos.find((x) => x.id === gastoId);
+      if (!g) return;
+      g.pagado = true;
+      if (g.real === null) g.real = g.estimado > 0 ? g.estimado : null;
+    });
+  }
+
+  /** Igual que "Ya compré los dólares": los planificados pasan a comprados. */
+  protected marcarDolares() {
+    this.hogar.actualizar(this.id(), (m) => (m.usd.comprados = m.usd.comprados ?? m.usd.planificados));
+  }
+
+  protected marcarTarjeta(q: Quien) {
+    this.hogar.actualizar(this.id(), (m) => (m.tarjetasPagadas[q] = true));
+  }
+
   /** ¿Alguna persona tiene gastos compartidos dentro de su tarjeta? */
   protected hayCompartidoEnTarjeta = computed(() => this.quienes.some((q) => this.r()[q].tarjetaCompartida > 0));
 

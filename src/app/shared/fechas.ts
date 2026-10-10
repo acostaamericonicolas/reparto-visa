@@ -28,6 +28,13 @@ export function mesCorto(iso: string): string {
   return nombre.charAt(0).toUpperCase() + nombre.slice(1, 3) + ' ' + iso.slice(2, 4);
 }
 
+/** Resta días a una fecha "yyyy-mm-dd" y la devuelve como "dd/mm" (ej. "2026-10-14", 2 → "12/10"). */
+export function diaMesAntes(iso: string, dias: number): string {
+  const [a, m, d] = iso.split('-').map(Number);
+  const fecha = new Date(Date.UTC(a, m - 1, d - dias));
+  return `${String(fecha.getUTCDate()).padStart(2, '0')}/${String(fecha.getUTCMonth() + 1).padStart(2, '0')}`;
+}
+
 /** Suma meses a un "yyyy-mm" y devuelve otro "yyyy-mm". */
 export function sumarMeses(anioMes: string, n: number): string {
   const [a, m] = anioMes.split('-').map(Number);

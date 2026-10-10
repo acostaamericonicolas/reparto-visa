@@ -1,34 +1,71 @@
+/* Las secciones se ubican en la grilla de Hogar (hogar.css) junto con las del formulario: el orden lo da `order`.
+   1 tarjeta principal · 2 cuánto pone cada uno · 3 qué falta pagar · 4 gastos compartidos · 5+ desplegables */
 :host {
-  display: grid;
-  gap: 18px;
-  align-content: start;
-  min-width: 0;
+  display: contents;
 }
+.s-hero {
+  order: 1;
+  grid-column: 1 / -1;
+}
+.s-aporte {
+  order: 2;
+}
+.s-falta {
+  order: 3;
+}
+.s-evv {
+  order: 9;
+}
+.s-torta {
+  order: 10;
+}
+
 .bloque {
   padding: 16px;
   display: grid;
-  gap: 14px;
+  gap: 12px;
   min-width: 0;
+  align-content: start;
 }
+.libre {
+  color: var(--hero-acento) !important;
+}
+.titulo-fila {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+.falta {
+  color: var(--aviso);
+  font-size: 16px;
+}
+.transferencias,
 .indicadores {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
 }
 .indicador {
   display: grid;
-  gap: 2px;
-  padding: 10px 14px;
-  border: 1px solid var(--linea);
+  gap: 1px;
+  padding: 8px 12px;
   border-radius: var(--radio);
-  background: var(--superficie);
+  background: var(--fondo);
+  min-width: 0;
 }
 .indicador strong {
-  font-size: 18px;
+  font-size: 16px;
+  text-align: left;
 }
-.indicador.destacado {
-  background: var(--acento-suave);
-  border-color: var(--acento);
+.transferencias .indicador strong {
+  font-size: 19px;
+}
+.indicador.pendiente {
+  background: var(--aviso-suave);
+}
+.indicador.pendiente .ayuda {
+  color: var(--aviso);
 }
 tfoot td,
 tr.fuerte td {
@@ -42,6 +79,10 @@ tfoot td {
 }
 tr.pasado td {
   color: var(--peligro);
+}
+.resumen.pasado {
+  color: var(--aviso);
+  font-weight: 600;
 }
 .leyenda {
   list-style: none;
@@ -57,14 +98,11 @@ tr.pasado td {
 }
 .crece {
   flex: 1;
+  min-width: 0;
 }
 .porcentaje {
   min-width: 56px;
   color: var(--texto-2);
-}
-.indicador.pendiente {
-  border-color: var(--aviso);
-  background: var(--aviso-suave);
 }
 .todo-pagado {
   margin: 0;
@@ -76,11 +114,23 @@ tr.pasado td {
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 6px;
 }
 .faltan li {
   display: flex;
+  align-items: center;
   gap: 10px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid var(--linea);
+  padding: 8px 0;
+  border-top: 1px solid var(--linea);
+}
+.tilde {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+.tilde input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--ok);
+  flex: none;
 }

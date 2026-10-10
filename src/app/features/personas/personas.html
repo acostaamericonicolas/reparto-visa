@@ -9,7 +9,7 @@
       <h2>Quiénes usan la tarjeta</h2>
       @for (p of datos.personas(); track p.id) {
         <div class="fila">
-          <span class="punto" [style.background]="color(p.id)"></span>
+          <span class="avatar" [style.--color]="color(p.id)">{{ p.nombre.charAt(0).toUpperCase() }}</span>
           <input type="text" class="crece" [id]="'nombre-' + p.id" [value]="p.nombre"
                  aria-label="Nombre" (change)="renombrar(p.id, $event)" />
           <button class="boton boton-chico boton-peligro" (click)="eliminar(p.id)">

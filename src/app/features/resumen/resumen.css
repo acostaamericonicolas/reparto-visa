@@ -1,22 +1,68 @@
-.encabezado {
+/* Tarjeta del saldo e indicadores: lado a lado en la compu, uno debajo del otro en el celular */
+.cabecera {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: stretch;
+}
+.saldo-fila {
   display: flex;
-  flex-wrap: wrap;
-  gap: 12px 20px;
   align-items: end;
   justify-content: space-between;
+  gap: 12px;
 }
-.encabezado p {
-  margin-top: 4px;
+.saldo-pie {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
-.ocupado {
-  opacity: 0.7;
-  pointer-events: none;
+.datos {
+  display: grid;
+  gap: 10px;
+  align-content: stretch;
 }
+.dato strong {
+  font-size: 18px;
+}
+@media (max-width: 760px) {
+  .cabecera {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .datos {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.titulo-personas {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.titulo-personas h2 {
+  font-size: 17px;
+}
+.titulo-personas input {
+  width: 200px;
+  min-width: 0;
+}
+.alias {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12.5px;
+  color: var(--texto-2);
+}
+
 /* "Movimientos" como desplegable: el título es la parte que se toca */
 .movimientos summary {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 4px 8px;
   padding: 14px;
   cursor: pointer;
   list-style: none;
@@ -25,7 +71,9 @@
   display: none;
 }
 .movimientos summary::before {
-  content: '▸';
+  content: '›';
+  font-size: 18px;
+  line-height: 1;
   color: var(--texto-2);
   transition: transform 0.15s;
 }
@@ -34,6 +82,9 @@
 }
 .movimientos[open] summary {
   border-bottom: 1px solid var(--linea);
+}
+.resumen-mov {
+  margin-left: auto;
 }
 .cabecera-tabla {
   display: flex;

@@ -79,7 +79,7 @@ export class Datos {
           const tarjetas = Object.fromEntries(
             Object.entries(d?.tarjetas ?? {}).map(([t, p]) => [ocultarNumeroTarjeta(t), p]),
           );
-          const config = { personas: d?.personas ?? [], tarjetas };
+          const config: Config = { personas: d?.personas ?? [], tarjetas, alias: d?.alias ?? '' };
           // Datos guardados antes de ocultar los números de tarjeta: se corrigen una sola vez.
           if (Object.keys(tarjetas).join() !== Object.keys(d?.tarjetas ?? {}).join()) this.guardarConfig(config);
           else this.config.set(config);
@@ -223,7 +223,7 @@ export class Datos {
   eliminarPersona(id: string) {
     const c = this.config();
     const tarjetas = Object.fromEntries(Object.entries(c.tarjetas).filter(([, p]) => p !== id));
-    this.guardarConfig({ personas: c.personas.filter((p) => p.id !== id), tarjetas });
+    this.guardarConfig({ ...c, personas: c.personas.filter((p) => p.id !== id), tarjetas });
     for (const mes of this.ids()) {
       if (this.resumenes()[mes].rows.some((r) => r.partes.some((p) => p.p === id))) {
         this.actualizar(mes, (r) => r.rows.forEach((it) => (it.partes = it.partes.filter((p) => p.p !== id))));

@@ -1,6 +1,6 @@
 /*
- * Reparto Visa — estilos globales
- * Planilla de liquidación: totales por persona arriba, tabla del resumen abajo.
+ * AFIN (Administración Financiera) — estilos globales
+ * Tarjeta principal oscura con el dato más importante, tarjetas por persona y desplegables para el detalle.
  * Los colores son variables: cambiando una cambia toda la app (claro y oscuro).
  * Cada componente solo agrega su disposición propia.
  */
@@ -11,13 +11,25 @@
   --superficie: #ffffff;
   --texto: #17202a;
   --texto-2: #5d6b78;
-  --linea: #d9e0e6;
-  --acento: #1d5c8c;
-  --acento-suave: #e3eef7;
+  --linea: #dfe5ea;
+  --acento: #0b7d6a;
+  --acento-suave: #e0f4ef;
+  --sobre-acento: #ffffff;
   --aviso: #a4570a;
   --aviso-suave: #fbf0e2;
   --peligro: #b3261e;
   --ok: #2f7d4a;
+  --ok-suave: #e4f3e8;
+
+  /* Tarjeta principal (oscura en los dos temas): saldo del cierre, libre del mes, proyección */
+  --hero-fondo: #16232e;
+  --hero-linea: #2b3641;
+  --hero-texto: #e5ebf0;
+  --hero-texto-2: #94a3b0;
+  --hero-acento: #5eead4;
+  --hero-sobre-acento: #0b3b33;
+  --hero-aviso-fondo: #3a2a17;
+  --hero-aviso: #e8a65a;
 
   /* Un color por persona (en el orden de la lista de personas). Paleta fría; los tonos parecidos no quedan
      juntos para que se distingan en las barras apiladas. "Sin asignar" usa --aviso. */
@@ -28,25 +40,57 @@
   --f-texto: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
   --f-numeros: 'IBM Plex Mono', ui-monospace, Consolas, monospace;
   --radio: 8px;
+  --radio-tarjeta: 12px;
+  /* Alto del menú inferior en el celular (la página deja ese espacio abajo) */
+  --alto-menu: 60px;
 }
 
+/* Tema oscuro. Sin elección (sin data-tema) sigue al sistema; el sol/luna fija data-tema="claro" u "oscuro".
+   Los mismos valores van dos veces: uno para el sistema en oscuro y otro para la elección manual. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-tema='claro']) {
     --fondo: #11161b;
     --superficie: #192028;
     --texto: #e5ebf0;
     --texto-2: #94a3b0;
     --linea: #2b3641;
-    --acento: #7db5e0;
-    --acento-suave: #1d3044;
+    --acento: #2ec4a6;
+    --acento-suave: #123a33;
+    --sobre-acento: #06231e;
     --aviso: #e8a65a;
     --aviso-suave: #3a2a17;
     --peligro: #f2867e;
     --ok: #7fcf95;
+    --ok-suave: #173324;
+    --hero-fondo: #0e2a2b;
+    --hero-linea: #1f4a48;
     --p1: #3b82f6; --p2: #2ec4a6; --p3: #818cf8; --p4: #a3e635;
     --p5: #60a5fa; --p6: #94a3b8; --p7: #14b8a6; --p8: #22d3ee;
     color-scheme: dark;
   }
+}
+:root[data-tema='oscuro'] {
+  --fondo: #11161b;
+  --superficie: #192028;
+  --texto: #e5ebf0;
+  --texto-2: #94a3b0;
+  --linea: #2b3641;
+  --acento: #2ec4a6;
+  --acento-suave: #123a33;
+  --sobre-acento: #06231e;
+  --aviso: #e8a65a;
+  --aviso-suave: #3a2a17;
+  --peligro: #f2867e;
+  --ok: #7fcf95;
+  --ok-suave: #173324;
+  --hero-fondo: #0e2a2b;
+  --hero-linea: #1f4a48;
+  --p1: #3b82f6; --p2: #2ec4a6; --p3: #818cf8; --p4: #a3e635;
+  --p5: #60a5fa; --p6: #94a3b8; --p7: #14b8a6; --p8: #22d3ee;
+  color-scheme: dark;
+}
+:root[data-tema='claro'] {
+  color-scheme: light;
 }
 
 /* 2. Base ----------------------------------------------------------- */
@@ -75,14 +119,14 @@ th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.06em; color
   .pagina { padding-inline: 12px; padding-block: 14px 32px; gap: 14px; }
   h1 { font-size: 21px; }
 }
-.panel { background: var(--superficie); border: 1px solid var(--linea); border-radius: var(--radio); }
+.panel { background: var(--superficie); border: 1px solid var(--linea); border-radius: var(--radio-tarjeta); }
 .ayuda { font-size: 12.5px; color: var(--texto-2); margin: 0; }
 .fila { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 
 .boton { border: 1px solid var(--linea); background: var(--superficie); border-radius: 6px; padding: 7px 12px; cursor: pointer; white-space: nowrap; }
 .boton:hover { border-color: var(--acento); }
 .boton:disabled { opacity: 0.55; cursor: default; }
-.boton-primario { background: var(--acento); border-color: var(--acento); color: var(--superficie); font-weight: 600; }
+.boton-primario { background: var(--acento); border-color: var(--acento); color: var(--sobre-acento); font-weight: 600; }
 .boton-chico { padding: 3px 8px; font-size: 12.5px; }
 .boton-link { border: 0; background: none; color: var(--acento); padding: 2px 4px; cursor: pointer; }
 .boton-peligro { color: var(--peligro); }
@@ -103,6 +147,11 @@ p.error { color: var(--peligro); font-size: 12.5px; margin: 0; }
 .vacio { padding: 40px 20px; text-align: center; color: var(--texto-2); display: grid; gap: 10px; justify-items: center; }
 .vacio strong { color: var(--texto); font: 700 18px var(--f-titulo); }
 
+/* Con el menú inferior (celular), la página deja lugar abajo para que no tape el contenido */
+@media (max-width: 700px) {
+  .pagina { padding-bottom: calc(var(--alto-menu) + 24px + env(safe-area-inset-bottom, 0px)); }
+}
+
 /* 4. Contenido ancho en tarjetas y desplegables ----------------------
    Una tabla ancha scrollea de costado dentro de su cuadro (.desplazable) y nunca ensancha la tarjeta
    ni la página. Las grillas estiran sus columnas al contenido si no se las limita con minmax(0, 1fr)
@@ -119,6 +168,64 @@ p.error { color: var(--peligro); font-size: 12.5px; margin: 0; }
 .desplegable .desplazable :is(th, td):first-child {
   position: sticky; left: 0; z-index: 1; background: var(--superficie); white-space: nowrap;
 }
+
+
+/* 5. Componentes del diseño ------------------------------------------ */
+/* Tarjeta principal: el dato más importante de la pantalla (saldo, libre del mes, cuotas pendientes) */
+.hero { background: var(--hero-fondo); color: var(--hero-texto); border: 1px solid var(--hero-linea); border-radius: 16px; padding: 16px; display: grid; gap: 6px; min-width: 0; }
+.hero-cabecera { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.hero-etiqueta { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--hero-texto-2); }
+.hero-chip { font-size: 11.5px; font-weight: 600; border-radius: 999px; padding: 2px 9px; background: var(--hero-aviso-fondo); color: var(--hero-aviso); white-space: nowrap; }
+.hero-chip.listo { background: var(--hero-linea); color: var(--hero-acento); }
+.hero-monto { font: 500 30px/1.15 var(--f-numeros); font-variant-numeric: tabular-nums; color: #fff; overflow-wrap: anywhere; }
+.hero-sub { font-size: 12px; color: var(--hero-texto-2); }
+.hero-barra { height: 6px; border-radius: 999px; background: var(--hero-linea); overflow: hidden; margin-top: 6px; }
+.hero-barra > span { display: block; height: 100%; background: var(--hero-acento); border-radius: 999px; transition: width 0.3s; }
+.hero-boton { border: 0; border-radius: 10px; padding: 8px 12px; background: var(--hero-acento); color: var(--hero-sobre-acento); font-weight: 600; cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; }
+.hero-datos { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; border-top: 1px solid var(--hero-linea); padding-top: 10px; margin-top: 6px; }
+.hero-datos span { display: block; font-size: 11px; color: var(--hero-texto-2); }
+.hero-datos strong { font: 500 14px var(--f-numeros); color: #fff; }
+.hero select { background: var(--hero-linea); color: #fff; border-color: var(--hero-linea); }
+@media (max-width: 600px) { .hero-monto { font-size: 26px; } }
+
+/* Chip que se toca (Avisado, Pagó, filtros) */
+.chip { display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--linea); border-radius: 999px; padding: 3px 10px; font-size: 12px; font-weight: 600; color: var(--texto-2); background: var(--superficie); cursor: pointer; white-space: nowrap; }
+.chip:hover { border-color: var(--acento); }
+.chip[aria-pressed='true'] { background: var(--acento-suave); border-color: var(--acento); color: var(--acento); }
+.chip.ok[aria-pressed='true'] { background: var(--ok-suave); border-color: var(--ok); color: var(--ok); }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+/* En el celular los chips van en una sola fila que se desliza */
+@media (max-width: 600px) { .chips.deslizables { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; } .chips.deslizables::-webkit-scrollbar { display: none; } }
+
+/* Inicial de una persona en un círculo con su color */
+.avatar { width: 34px; height: 34px; border-radius: 50%; flex: none; display: grid; place-items: center; font-weight: 600; background: color-mix(in srgb, var(--color, var(--texto-2)) 18%, var(--superficie)); color: var(--color, var(--texto-2)); }
+
+/* Interruptor de dos o más opciones (Pesos / Dólares, secciones) */
+.interruptor { justify-self: start; display: inline-flex; background: var(--superficie); border: 1px solid var(--linea); border-radius: 10px; padding: 3px; gap: 3px; }
+.interruptor button { border: 0; background: none; border-radius: 7px; padding: 5px 12px; font-weight: 600; color: var(--texto-2); cursor: pointer; }
+.interruptor button[aria-pressed='true'] { background: var(--hero-fondo); color: #fff; }
+
+/* Tarjeta chica con un dato (Personas, Asignaciones) */
+.dato { background: var(--superficie); border: 1px solid var(--linea); border-radius: var(--radio-tarjeta); padding: 10px 12px; display: grid; gap: 1px; text-align: left; min-width: 0; }
+.dato > span { font-size: 12px; color: var(--texto-2); }
+.dato > strong { font: 700 20px/1.2 var(--f-titulo); }
+.dato.ok { border-color: var(--ok); }
+.dato.ok > strong { color: var(--ok); }
+.dato.pendiente { border-color: var(--aviso); background: var(--aviso-suave); }
+.dato.pendiente > strong { color: var(--aviso); }
+button.dato { font: inherit; color: inherit; cursor: pointer; }
+button.dato:hover { border-color: var(--acento); }
+
+/* Desplegable con forma de tarjeta: título y un resumen, se toca para abrir */
+.tarjeta-desplegable { background: var(--superficie); border: 1px solid var(--linea); border-radius: var(--radio-tarjeta); min-width: 0; }
+.tarjeta-desplegable > summary { display: flex; align-items: center; gap: 10px; padding: 12px 14px; cursor: pointer; list-style: none; }
+.tarjeta-desplegable > summary::-webkit-details-marker { display: none; }
+.tarjeta-desplegable > summary::before { content: '›'; font-size: 18px; line-height: 1; color: var(--texto-2); transition: transform 0.15s; }
+.tarjeta-desplegable[open] > summary::before { transform: rotate(90deg); }
+.tarjeta-desplegable > summary h2 { font-size: 15px; }
+.tarjeta-desplegable > summary .resumen { font-size: 12px; color: var(--texto-2); margin-left: auto; text-align: right; }
+.tarjeta-desplegable[open] > summary { border-bottom: 1px solid var(--linea); }
+.tarjeta-desplegable > .contenido { padding: 14px; display: grid; gap: 12px; min-width: 0; }
 
 @media (prefers-reduced-motion: no-preference) {
   .boton { transition: border-color 0.15s; }

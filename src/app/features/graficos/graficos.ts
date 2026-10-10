@@ -11,9 +11,6 @@ import { r2 } from '../../shared/montos';
 
 type Moneda = 'pesos' | 'usd';
 
-/** Valor de la opción "Todas" del selector ('' ya es "Sin asignar"). */
-const TODAS = 'todas';
-
 @Component({
   selector: 'app-graficos',
   imports: [Grafico, PesosPipe, DolaresPipe, VariacionPipe],
@@ -23,7 +20,6 @@ const TODAS = 'todas';
 export class Graficos {
   protected datos = inject(Datos);
 
-  protected readonly TODAS = TODAS;
   protected moneda = signal<Moneda>('pesos');
   /** Persona elegida en la evolución (null = todas; '' = la parte sin asignar). */
   protected personaEvolucion = signal<string | null>(null);
@@ -103,12 +99,30 @@ export class Graficos {
     this.personaProyeccion.set(this.personaProyeccion() === id ? null : id);
   }
 
-  protected elegirMesProyeccion(evento: Event) {
-    this.mesProyeccionElegido.set((evento.target as HTMLSelectElement).value);
+  /** Chips de la evolución: cada persona (y "Sin asignar") con su color. */
+  protected chipsEvolucion = computed(() => this.seriesMoneda().map((s) => ({ id: s.id, nombre: s.nombre, color: this.color(s) })));
+
+  /** Tocar una persona la muestra sola; tocarla de nuevo (o "Todas") vuelve a mostrar todas. */
+  protected alternarPersonaEvolucion(id: string | null) {
+    this.personaEvolucion.set(id === null || this.personaEvolucion() === id ? null : id);
   }
 
-  protected elegirPersona(evento: Event) {
-    const valor = (evento.target as HTMLSelectElement).value;
-    this.personaEvolucion.set(valor === TODAS ? null : valor);
+  /** Lo que queda en cuotas: de todas las personas o de la elegida. */
+  protected montoProyeccion = computed(() => {
+    const elegida = this.personaProyeccion();
+    return elegida === null ? this.totalComprometido() : (this.comprometido().find((c) => c.id === elegida)?.total ?? 0);
+  });
+
+  /** Último mes con cuotas y lo que vence el mes que viene, para la tarjeta de la proyección. */
+  protected hasta = computed(() => this.proyeccion()?.etiquetas.at(-1) ?? '');
+  protected proximoMes = computed(() => {
+    const p = this.proyeccion();
+    const elegida = this.personaProyeccion();
+    if (!p) return 0;
+    return elegida === null ? (p.total[0] ?? 0) : (p.series.find((s) => s.id === elegida)?.datos[0] ?? 0);
+  });
+
+  protected elegirMesProyeccion(evento: Event) {
+    this.mesProyeccionElegido.set((evento.target as HTMLSelectElement).value);
   }
 }

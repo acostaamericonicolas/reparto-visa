@@ -1,20 +1,23 @@
-<div class="selector" role="group" aria-label="Persona">
+<div class="interruptor" role="group" aria-label="Persona">
   @for (q of quienes; track q) {
-    <button class="boton" type="button" [attr.aria-pressed]="quien() === q" (click)="quien.set(q)">{{ nombres()[q] }}</button>
+    <button type="button" [attr.aria-pressed]="quien() === q" (click)="quien.set(q)">{{ nombres()[q] }}</button>
   }
 </div>
 
-<div class="indicadores">
-  <div class="indicador"><span class="ayuda">Plata libre del mes</span><strong class="num">{{ disponible().libre | pesos }}</strong></div>
-  <div class="indicador"><span class="ayuda">Gastaste</span><strong class="num">{{ disponible().gastado | pesos }}</strong></div>
-  <div class="indicador destacado" [class.negativo]="disponible().queda < 0">
-    <span class="ayuda">Te queda</span><strong class="num">{{ disponible().queda | pesos }}</strong>
+<section class="hero" aria-label="Plata libre del mes">
+  <div class="hero-cabecera">
+    <span class="hero-etiqueta">Te queda</span>
+    @if (disponible().queda < 0) { <span class="hero-chip">Te pasaste</span> }
   </div>
-</div>
-
-<div class="barra" role="img" [attr.aria-label]="usado().toFixed(0) + '% de lo libre ya gastado'">
-  <span [style.width.%]="usado()" [class.pasado]="disponible().queda < 0"></span>
-</div>
+  <div class="hero-monto" [class.negativo]="disponible().queda < 0">{{ disponible().queda | pesos }}</div>
+  <div class="hero-barra" role="img" [attr.aria-label]="usado().toFixed(0) + '% de lo libre ya gastado'">
+    <span [style.width.%]="usado()" [class.pasado]="disponible().queda < 0"></span>
+  </div>
+  <div class="hero-datos">
+    <div><span>Plata libre del mes</span><strong>{{ disponible().libre | pesos }}</strong></div>
+    <div><span>Gastaste</span><strong>{{ disponible().gastado | pesos }}</strong></div>
+  </div>
+</section>
 <p class="ayuda">
   Lo libre ya tiene descontada la tarjeta ({{ tarjeta() | pesos }} de lo personal) y lo que se pone para los gastos compartidos.
   Acá anotá lo demás: efectivo, débito, transferencias, salidas.

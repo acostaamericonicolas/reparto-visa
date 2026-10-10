@@ -1,16 +1,31 @@
 {
-  "name": "Reparto Visa y Hogar",
-  "short_name": "Reparto",
+  "name": "AFIN · Administración Financiera",
+  "short_name": "AFIN",
   "description": "Reparto del resumen de la tarjeta y gastos del hogar.",
   "lang": "es-AR",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#f3f5f7",
-  "theme_color": "#1d5c8c",
+  "theme_color": "#16232e",
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }

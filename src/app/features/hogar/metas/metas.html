@@ -1,7 +1,10 @@
-<div class="indicadores">
-  <div class="indicador destacado"><span class="ayuda">Ahorrado en total</span><strong class="num">{{ resumen().total | dolares }}</strong></div>
-  <div class="indicador"><span class="ayuda">Ritmo (últimos 3 meses)</span><strong class="num">{{ resumen().promedioMensual | dolares }} por mes</strong></div>
-</div>
+<section class="hero" aria-label="Ahorro total">
+  <span class="hero-etiqueta">Ahorrado en total</span>
+  <div class="hero-monto">{{ resumen().total | dolares }}</div>
+  <div class="hero-datos">
+    <div><span>Ritmo (últimos 3 meses)</span><strong>{{ resumen().promedioMensual | dolares }} por mes</strong></div>
+  </div>
+</section>
 
 @if (sinObjetivos()) {
   <p class="aviso">Definí cuántos dólares necesitan para cada meta y se calcula cuánto falta y en cuánto tiempo llegan.</p>

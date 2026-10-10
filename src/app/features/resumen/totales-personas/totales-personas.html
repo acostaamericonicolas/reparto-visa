@@ -1,46 +1,35 @@
-<section class="tarjetas" aria-label="Totales por persona">
+<section class="personas" aria-label="Totales por persona">
   @for (p of personas(); track p.id) {
     @let t = totales().get(p.id)!;
     @let e = estado(p.id);
-    <div class="tarjeta" [class.elegida]="filtro() === p.id" [class.pagado]="e.pagado">
-      <div class="marcas">
-        <label [title]="e.avisado ? 'Ya le avisaste' : 'Marcar que le avisaste'">
-          <input type="checkbox" [id]="'avisado-' + p.id" [checked]="e.avisado" (change)="marcar(p.id, 'avisado', $event)"
-                 [attr.aria-label]="'Le avisé a ' + p.nombre" />A
-        </label>
-        <label [title]="e.pagado ? 'Ya pagó' : 'Marcar que pagó'">
-          <input type="checkbox" [id]="'pagado-' + p.id" [checked]="e.pagado" (change)="marcar(p.id, 'pagado', $event)"
-                 [attr.aria-label]="p.nombre + ' pagó'" />P
-        </label>
-      </div>
-      <button class="cuerpo" (click)="alternar(p.id)" [attr.aria-pressed]="filtro() === p.id">
-        <span class="nombre"><span class="punto" [style.background]="color(p.id)"></span>{{ p.nombre }}</span>
-        <span class="monto">{{ t.pesos | pesos }}</span>
-        <span class="usd">{{ t.usd | dolares }}</span>
+    <div class="persona" [class.elegida]="filtro() === p.id" [class.pagado]="e.pagado">
+      <!-- Tocar la tarjeta muestra sus ítems en Movimientos -->
+      <button class="cuerpo" type="button" (click)="alternar(p.id)" [attr.aria-pressed]="filtro() === p.id"
+              [attr.aria-label]="'Ver los ítems de ' + p.nombre">
+        <span class="avatar" [style.--color]="color(p.id)">{{ p.nombre.charAt(0).toUpperCase() }}</span>
+        <span class="quien">
+          <strong>{{ p.nombre }}</strong>
+          <span>{{ t.items ? t.items + ' ítem' + (t.items === 1 ? '' : 's') : 'Sin ítems este mes' }}</span>
+        </span>
+        <span class="montos">
+          <strong class="num">{{ t.pesos | pesos }}</strong>
+          @if (t.usd) { <span class="num">+ {{ t.usd | dolares }}</span> }
+        </span>
       </button>
-      <div class="pie">
-        <span>{{ t.items }} ítem{{ t.items === 1 ? '' : 's' }}</span>
-        <button class="boton-link" (click)="copiar.emit(p)" [disabled]="!t.items">Copiar detalle</button>
+      <div class="acciones">
+        <button class="chip" type="button" [attr.aria-pressed]="e.avisado" (click)="marcar(p.id, 'avisado', !e.avisado)"
+                [title]="e.avisado ? 'Ya le avisaste. Tocá para desmarcar' : 'Marcar que le avisaste'">
+          <app-icono nombre="avisar" [tamano]="13" />{{ e.avisado ? 'Avisado' : 'Avisar' }}
+        </button>
+        <button class="chip ok" type="button" [attr.aria-pressed]="e.pagado" (click)="marcar(p.id, 'pagado', !e.pagado)"
+                [title]="e.pagado ? 'Ya pagó. Tocá para desmarcar' : 'Marcar que pagó'">
+          <app-icono [nombre]="e.pagado ? 'ok' : 'pago'" [tamano]="13" />Pagó
+        </button>
+        <button class="boton-link copiar" type="button" (click)="copiar.emit(p)" [disabled]="!t.items"
+                [title]="'Copiar el detalle de ' + p.nombre + ' para mandárselo'">
+          <app-icono nombre="copiar" [tamano]="15" /> Copiar
+        </button>
       </div>
     </div>
   }
-  <div class="tarjeta sin-asignar" [class.hay]="sinAsignar().items" [class.elegida]="filtro() === ''">
-    <button class="cuerpo" (click)="alternar('')" [attr.aria-pressed]="filtro() === ''">
-      <span class="nombre"><span class="punto sin-color"></span>Sin asignar</span>
-      <span class="monto">{{ sinAsignar().pesos | pesos }}</span>
-      <span class="usd">{{ sinAsignar().usd | dolares }}</span>
-    </button>
-    <div class="pie">
-      <span>
-        @if (sinAsignar().items) {
-          {{ sinAsignar().items }} pendiente{{ sinAsignar().items === 1 ? '' : 's' }}
-        } @else {
-          Todo asignado
-        }
-      </span>
-      @if (filtro() !== 'todos') {
-        <button class="boton-link" (click)="filtro.set('todos')">Ver todos</button>
-      }
-    </div>
-  </div>
 </section>

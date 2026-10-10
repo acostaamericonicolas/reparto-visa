@@ -1,7 +1,23 @@
+/* Las secciones se ubican en la grilla de Hogar (hogar.css) junto con las de los resultados: el orden lo da `order`.
+   4 gastos compartidos (ancho completo) · 5 sueldos · 6 ahorro en USD · 7 tarjetas · 8 notas */
 :host {
-  display: grid;
-  gap: 18px;
-  min-width: 0;
+  display: contents;
+}
+.s-gastos {
+  order: 4;
+  grid-column: 1 / -1;
+}
+.s-sueldos {
+  order: 5;
+}
+.s-ahorro {
+  order: 6;
+}
+.s-tarjetas {
+  order: 7;
+}
+.s-notas {
+  order: 8;
 }
 .bloque {
   padding: 16px;

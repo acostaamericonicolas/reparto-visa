@@ -41,3 +41,11 @@ export function sumarMeses(anioMes: string, n: number): string {
   const total = a * 12 + (m - 1) + n;
   return `${Math.floor(total / 12)}-${String((total % 12) + 1).padStart(2, '0')}`;
 }
+
+/**
+ * Meses todavía sin resumen que se muestran "apagados": los `cantidad` meses ("yyyy-mm") que siguen al mes en que
+ * vence el último resumen cargado.
+ */
+export function mesesFuturos(ultimo: string, cantidad = 2): string[] {
+  return Array.from({ length: cantidad }, (_, i) => sumarMeses(ultimo, i + 1));
+}

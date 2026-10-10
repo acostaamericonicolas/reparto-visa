@@ -1,5 +1,5 @@
 <section class="personas" aria-label="Totales por persona">
-  @for (p of personas(); track p.id) {
+  @for (p of ordenadas(); track p.id) {
     @let t = totales().get(p.id)!;
     @let e = estado(p.id);
     <div class="persona" [class.elegida]="filtro() === p.id" [class.pagado]="e.pagado">

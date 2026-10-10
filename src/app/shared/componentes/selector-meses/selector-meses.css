@@ -59,6 +59,17 @@
   font-family: var(--f-texto);
   color: var(--hero-aviso);
 }
+/* Meses que todavía no tienen PDF: apagados */
+.mes.apagado {
+  border-style: dashed;
+  opacity: 0.6;
+}
+.mes.elegido.apagado {
+  background: var(--superficie);
+  border-color: var(--texto-2);
+  color: var(--texto-2);
+  opacity: 1;
+}
 .flecha {
   flex: none;
   border: 1px solid var(--linea);

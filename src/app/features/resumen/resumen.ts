@@ -7,7 +7,7 @@ import { PesosPipe } from '../../pipes/pesos-pipe';
 import { DolaresPipe } from '../../pipes/dolares-pipe';
 import { Datos } from '../../services/datos';
 import { detalleDePersona } from '../../shared/detalle-persona';
-import { fechaIso, mesCorto, nombreMes } from '../../shared/fechas';
+import { fechaIso, mesCorto, mesesFuturos, nombreMes } from '../../shared/fechas';
 import { TotalPersona, pendiente, totalesPorPersona } from '../../shared/reparto';
 import { Icono } from '../../shared/componentes/icono/icono';
 import { OpcionMes, SelectorMeses } from '../../shared/componentes/selector-meses/selector-meses';
@@ -36,18 +36,34 @@ export class Resumen {
 
   protected mesId = computed(() => {
     const id = this.mes();
-    return id && this.datos.resumenes()[id] ? id : (this.datos.ids().at(-1) ?? null);
+    return id && (this.datos.resumenes()[id] || this.futuros().includes(id)) ? id : (this.datos.ids().at(-1) ?? null);
   });
   protected resumen = computed(() => (this.mesId() ? this.datos.resumenes()[this.mesId()!] : null));
   protected lista = computed(() => this.datos.ids().map((id) => this.datos.resumenes()[id]));
 
+  /** Meses que vienen y todavía no tienen PDF ("yyyy-mm"): se ven apagados hasta importar su resumen. */
+  protected futuros = computed(() => {
+    const ultimo = this.lista().at(-1);
+    if (!ultimo) return [];
+    const hoy = new Date();
+    const mesHoy = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
+    return mesesFuturos(mesHoy, (fechaIso(ultimo.meta.vence) ?? ultimo.meta.id).slice(0, 7));
+  });
+  /** El mes elegido, si es uno que todavía no tiene PDF. */
+  protected mesFuturo = computed(() => {
+    const id = this.mesId();
+    return id && this.futuros().includes(id) ? id : null;
+  });
+
   /** Meses para el selector centrado: el nombre por el mes en que vence y cuántos ítems faltan asignar. */
   protected opcionesMeses = computed<OpcionMes[]>(() =>
-    this.lista().map((r) => {
+    this.lista().map((r): OpcionMes => {
       const vence = fechaIso(r.meta.vence) ?? r.meta.id;
       const pendientes = r.rows.filter(pendiente).length;
       return { id: r.meta.id, largo: nombreMes(vence), corto: mesCorto(vence), detalle: pendientes ? `${pendientes} pend.` : '' };
-    }),
+    }).concat(
+      this.futuros().map((mes) => ({ id: mes, largo: nombreMes(mes + '-01'), corto: mesCorto(mes + '-01'), apagado: true })),
+    ),
   );
 
   protected totales = computed(() => {

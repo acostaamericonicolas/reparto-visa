@@ -6,7 +6,7 @@
        (touchstart)="empezo()" (wheel)="empezo()" (pointerdown)="empezo()">
     <span class="borde" aria-hidden="true"></span>
     @for (m of meses(); track m.id; let i = $index) {
-      <button class="mes" type="button" role="tab" [class.elegido]="i === indice()" [attr.aria-selected]="i === indice()"
+      <button class="mes" type="button" role="tab" [class.elegido]="i === indice()" [class.apagado]="m.apagado" [attr.aria-selected]="i === indice()"
               [attr.aria-label]="m.largo + (m.detalle ? ', ' + m.detalle : '')" (click)="tocar(i)">
         <span class="nombre">{{ i === indice() ? m.largo : m.corto }}</span>
         @if (m.detalle) { <small>{{ m.detalle }}</small> }

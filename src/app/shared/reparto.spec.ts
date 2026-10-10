@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { Item, Resumen } from '../models/resumen';
-import { ajustarParte, arrastrar, dividir, falta, quitarParte, totalesPorPersona } from './reparto';
+import { ajustarParte, arrastrar, dividir, falta, quitarParte, ordenarPersonas, totalesPorPersona } from './reparto';
 import { montoIngresado, repartoIgual } from './montos';
 import { detalleDePersona } from './detalle-persona';
+import { mesesFuturos } from './fechas';
 
 const item = (pesos: number, extra: Partial<Item> = {}): Item => ({
   id: 'r0', fecha: '01.01.26', comp: '1*', detalle: 'COMPRA', cuota: '', pesos, usd: 0, tarjeta: 'T', partes: [], ...extra,
@@ -105,5 +106,23 @@ describe('detalleDePersona', () => {
   it('cruza de mes y omite el alias si no hay', () => {
     const res: Resumen = { meta: { id: '2026-08-27', cierre: '27 Ago 26', vence: '01 Sep 26', saldo: 0, saldoUsd: 0 }, rows: [] };
     expect(detalleDePersona(res, { id: 'eli', nombre: 'Eli' }).split('\n').at(-1)).toBe('Vence el 30/08');
+  });
+});
+
+describe('ordenarPersonas', () => {
+  const p = (id: string) => ({ id, nombre: id });
+  const t = (pesos: number, items = 1, usd = 0) => ({ pesos, usd, items });
+  it('de mayor a menor, las que pagaron al final y las sin ítems al fondo', () => {
+    const totales = new Map([['a', t(100)], ['b', t(300)], ['c', t(200)], ['d', t(0, 0)], ['e', t(100, 1, 5)]]);
+    const orden = ordenarPersonas([p('a'), p('b'), p('c'), p('d'), p('e')], totales, { b: { avisado: true, pagado: true } });
+    expect(orden.map((x) => x.id)).toEqual(['c', 'e', 'a', 'b', 'd']);
+  });
+});
+
+describe('mesesFuturos', () => {
+  it('muestra del mes de hoy a dos más, salteando los que ya tienen resumen', () => {
+    expect(mesesFuturos('2026-10', '2026-10')).toEqual(['2026-11', '2026-12']);
+    expect(mesesFuturos('2026-11', '2026-10')).toEqual(['2026-11', '2026-12', '2027-01']);
+    expect(mesesFuturos('2026-10', null)).toEqual(['2026-10', '2026-11', '2026-12']);
   });
 });

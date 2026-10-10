@@ -20,6 +20,8 @@ export interface OpcionMes {
   corto: string;
   /** Texto chico debajo (ej. "4 pend."), en color de aviso. */
   detalle?: string;
+  /** Mes que todavía no tiene resumen: se ve apagado. */
+  apagado?: boolean;
 }
 
 /**

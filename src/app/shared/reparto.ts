@@ -1,5 +1,5 @@
 import { Persona } from '../models/config';
-import { Item, Moneda, Parte, Resumen } from '../models/resumen';
+import { EstadoPersona, Item, Moneda, Parte, Resumen } from '../models/resumen';
 import { r2, repartoIgual } from './montos';
 
 /** Moneda en la que se reparte un ítem: dólares solo si no tiene pesos. */
@@ -139,4 +139,18 @@ export function totalesPorPersona(res: Resumen, personas: Persona[]): Map<string
   }
   tot.set('', sin);
   return tot;
+}
+
+/**
+ * Orden de las tarjetas de personas: primero las que deben, de mayor a menor (pesos y, si empatan, dólares);
+ * después las que ya pagaron, con el mismo orden; al final las que no tienen ítems ese mes.
+ */
+export function ordenarPersonas(
+  personas: Persona[],
+  totales: Map<string, TotalPersona>,
+  estados: Record<string, EstadoPersona> = {},
+): Persona[] {
+  const grupo = (p: Persona) => (!totales.get(p.id)?.items ? 2 : estados[p.id]?.pagado ? 1 : 0);
+  const t = (p: Persona) => totales.get(p.id) ?? { pesos: 0, usd: 0, items: 0 };
+  return [...personas].sort((a, b) => grupo(a) - grupo(b) || t(b).pesos - t(a).pesos || t(b).usd - t(a).usd);
 }

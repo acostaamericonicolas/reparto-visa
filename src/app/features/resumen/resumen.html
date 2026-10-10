@@ -119,6 +119,20 @@
       </div>
       <app-tabla-items [resumen]="r" [personas]="datos.personas()" [filtro]="filtro()" (verImpuestos)="impuestos.set($event)" />
     </details>
+  } @else if (mesFuturo()) {
+    <!-- Mes que todavía no tiene PDF: solo la tarjeta del saldo, apagada, para importarlo -->
+    <section class="hero saldo apagada" aria-label="Saldo del cierre">
+      <div class="hero-cabecera">
+        <span class="hero-etiqueta">Saldo del cierre</span>
+      </div>
+      <div class="hero-monto">Sin resumen todavía</div>
+      <div class="saldo-pie">
+        <span class="hero-sub">Importá el PDF de este mes para ver el reparto.</span>
+        <button class="hero-boton" type="button" [disabled]="importando()" (click)="archivo.click()">
+          <app-icono nombre="subir" [tamano]="16" />{{ importando() ? 'Importando…' : 'Importar PDF' }}
+        </button>
+      </div>
+    </section>
   } @else {
     <section class="panel vacio">
       <strong>Todavía no hay ningún resumen cargado</strong>

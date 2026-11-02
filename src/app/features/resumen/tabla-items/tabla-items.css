@@ -174,3 +174,16 @@ th {
     justify-content: flex-start;
   }
 }
+
+/* "Dividido en N" desplegable cuando hay una persona filtrada */
+.desplegar {
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+.flecha {
+  display: inline-block;
+  transition: transform 0.15s;
+}
+.flecha.abierta {
+  transform: rotate(90deg);
+}

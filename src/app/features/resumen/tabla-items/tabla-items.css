@@ -182,6 +182,7 @@ th {
 }
 .flecha {
   display: inline-block;
+  margin-left: 2px;
   transition: transform 0.15s;
 }
 .flecha.abierta {

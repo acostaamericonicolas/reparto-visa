@@ -13,6 +13,7 @@ import {
   moneda,
   pendiente,
   quitarParte,
+  visibleEn,
 } from '../../../shared/reparto';
 
 interface Grupo {
@@ -48,8 +49,7 @@ export class TablaItems {
     const f = this.filtro();
     const grupos: Grupo[] = [];
     for (const r of this.resumen().rows) {
-      const visible = f === 'todos' || (f === '' ? pendiente(r) : r.partes.some((p) => p.p === f));
-      if (!visible) continue;
+      if (!visibleEn(r, f)) continue;
       const ultimo = grupos[grupos.length - 1];
       if (ultimo?.tarjeta === r.tarjeta) ultimo.items.push(r);
       else grupos.push({ tarjeta: r.tarjeta, items: [r] });

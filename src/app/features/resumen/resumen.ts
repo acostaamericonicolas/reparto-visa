@@ -8,7 +8,7 @@ import { DolaresPipe } from '../../pipes/dolares-pipe';
 import { Datos } from '../../services/datos';
 import { detalleDePersona } from '../../shared/detalle-persona';
 import { fechaIso, mesCorto, mesesFuturos, nombreMes } from '../../shared/fechas';
-import { TotalPersona, pendiente, totalesPorPersona } from '../../shared/reparto';
+import { TotalPersona, pendiente, totalesPorPersona, visibleEn } from '../../shared/reparto';
 import { Icono } from '../../shared/componentes/icono/icono';
 import { OpcionMes, SelectorMeses } from '../../shared/componentes/selector-meses/selector-meses';
 import { DetalleImpuestos } from './detalle-impuestos/detalle-impuestos';
@@ -123,6 +123,11 @@ export class Resumen {
   /** "Movimientos" arranca cerrado; se abre al tocarlo o al elegir una persona o "Sin asignar". */
   protected movimientosAbiertos = signal(false);
   private movimientos = viewChild<ElementRef<HTMLDetailsElement>>('movimientos');
+  /** Cantidad de movimientos que muestra la tabla con el filtro actual. */
+  protected cantidadMovimientos = computed(() => {
+    const f = this.filtro();
+    return this.resumen()?.rows.filter((r) => visibleEn(r, f)).length ?? 0;
+  });
   protected nombreFiltro = computed(() => this.datos.persona(this.filtro())?.nombre ?? '');
 
   /** Tocar una tarjeta filtra la tabla, la abre y la lleva a la vista (en el celular queda más abajo). */

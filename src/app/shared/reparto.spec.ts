@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Item, Resumen } from '../models/resumen';
-import { ajustarParte, arrastrar, dividir, falta, quitarParte, ordenarPersonas, totalesPorPersona } from './reparto';
+import { ajustarParte, arrastrar, dividir, falta, quitarParte, ordenarPersonas, totalesPorPersona, visibleEn } from './reparto';
 import { montoIngresado, repartoIgual } from './montos';
 import { detalleDePersona } from './detalle-persona';
 import { mesesFuturos } from './fechas';
@@ -123,5 +123,21 @@ describe('mesesFuturos', () => {
   it('muestra los dos meses que siguen al último resumen cargado', () => {
     expect(mesesFuturos('2026-10')).toEqual(['2026-11', '2026-12']);
     expect(mesesFuturos('2026-12')).toEqual(['2027-01', '2027-02']);
+  });
+});
+
+describe('visibleEn', () => {
+  const solo = item(100, { partes: [{ p: 'eli', pesos: 100, usd: 0 }] });
+  const dividido = item(100, { partes: [{ p: 'eli', pesos: 50, usd: 0 }, { p: 'pool', pesos: 50, usd: 0 }] });
+  const nuevo = item(100);
+  const filas = [solo, dividido, nuevo];
+  const cuantos = (f: string) => filas.filter((r) => visibleEn(r, f)).length;
+
+  it('cuenta los movimientos de cada filtro', () => {
+    expect(cuantos('todos')).toBe(3);
+    expect(cuantos('eli')).toBe(2);
+    expect(cuantos('pool')).toBe(1);
+    expect(cuantos('')).toBe(1);
+    expect(cuantos('nadie')).toBe(0);
   });
 });

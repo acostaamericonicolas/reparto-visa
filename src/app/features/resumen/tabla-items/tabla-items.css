@@ -14,6 +14,24 @@ th {
 .detalle .etiqueta {
   margin-top: 3px;
 }
+.acciones {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+  align-items: center;
+}
+/* Botón del gasto recurrente: apagado hasta marcarlo */
+.boton-recurrente {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 7px;
+  color: var(--texto-2);
+}
+.boton-recurrente[aria-pressed='true'] {
+  background: var(--ok-suave);
+  border-color: var(--ok);
+  color: var(--ok);
+}
 .grupo td {
   background: var(--fondo);
   font-size: 12px;

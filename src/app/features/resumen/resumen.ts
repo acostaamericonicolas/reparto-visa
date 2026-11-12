@@ -7,6 +7,7 @@ import { PesosPipe } from '../../pipes/pesos-pipe';
 import { DolaresPipe } from '../../pipes/dolares-pipe';
 import { Datos } from '../../services/datos';
 import { detalleDePersona } from '../../shared/detalle-persona';
+import { estimadoMes } from '../../shared/estadisticas';
 import { fechaIso, mesCorto, mesesFuturos, nombreMes } from '../../shared/fechas';
 import { TotalPersona, pendiente, totalesPorPersona, visibleEn } from '../../shared/reparto';
 import { Icono } from '../../shared/componentes/icono/icono';
@@ -51,6 +52,15 @@ export class Resumen {
   protected mesFuturo = computed(() => {
     const id = this.mesId();
     return id && this.futuros().includes(id) ? id : null;
+  });
+
+  /** En un mes sin PDF: lo que ya se sabe que viene (cuotas pendientes y gastos recurrentes del último resumen). */
+  protected estimado = computed(() => {
+    const mes = this.mesFuturo();
+    const ultimo = this.lista().at(-1);
+    if (!mes || !ultimo) return null;
+    const e = estimadoMes(ultimo, this.futuros().indexOf(mes) + 1);
+    return e.total || e.recurrentesUsd ? e : null;
   });
 
   /** Meses para el selector centrado: el nombre por el mes en que vence y cuántos ítems faltan asignar. */

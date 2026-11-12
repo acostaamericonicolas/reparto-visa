@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Item, Resumen } from '../models/resumen';
-import { cuotasPendientes, gastoPorMes, proyeccionCuotas, variacion } from './estadisticas';
+import { MESES_RECURRENTES, cuotasPendientes, estimadoMes, gastoPorMes, proyeccionCuotas, variacion } from './estadisticas';
 
 const personas = [{ id: 'ana', nombre: 'Ana' }, { id: 'nico', nombre: 'Nico' }];
 const item = (pesos: number, extra: Partial<Item> = {}): Item => ({
@@ -55,5 +55,34 @@ describe('proyeccionCuotas', () => {
       { fecha: '01.01.26', detalle: 'COMPRA', cuota: '04/06', restantes: 2, porMes: 40, total: 80 },
       { fecha: '01.01.26', detalle: 'OTRA', cuota: '01/02', restantes: 1, porMes: 30, total: 30 },
     ]);
+  });
+});
+
+describe('gastos recurrentes en la proyección', () => {
+  const res = resumen('2026-10-01', '14 Oct 26', [
+    item(100, { id: 'a', cuota: '05/06', partes: [{ p: 'ana', pesos: 100, usd: 0 }] }),
+    item(50, { id: 'b', detalle: 'NETFLIX', recurrente: true, partes: [{ p: 'ana', pesos: 25, usd: 0 }, { p: 'nico', pesos: 25, usd: 0 }] }),
+    item(0, { id: 'c', detalle: 'SPOTIFY', usd: 5, recurrente: true, partes: [{ p: 'nico', pesos: 0, usd: 5 }] }),
+    // Marcado como recurrente pero en cuotas: no se suma dos veces.
+    item(10, { id: 'd', detalle: 'RARO', cuota: '06/06', recurrente: true, partes: [{ p: 'nico', pesos: 10, usd: 0 }] }),
+  ]);
+
+  it('suma los recurrentes en todos los meses proyectados, al menos los mínimos aunque terminen las cuotas', () => {
+    const p = proyeccionCuotas(res, personas);
+    expect(p.etiquetas).toEqual(['Nov 26', 'Dic 26', 'Ene 27'].slice(0, MESES_RECURRENTES));
+    expect(p.series.find((s) => s.id === 'ana')?.datos).toEqual([125, 25, 25]);
+    expect(p.series.find((s) => s.id === 'nico')?.datos).toEqual([25, 25, 25]);
+    expect(p.recurrentes).toBe(50);
+  });
+
+  it('lista los recurrentes de cada persona junto con sus cuotas', () => {
+    expect(cuotasPendientes(res, 'nico')).toEqual([
+      { fecha: '01.01.26', detalle: 'NETFLIX', cuota: '', recurrente: true, restantes: 3, porMes: 25, total: 75 },
+    ]);
+  });
+
+  it('estima lo que ya se sabe de los meses que todavía no tienen resumen', () => {
+    expect(estimadoMes(res, 1)).toEqual({ cuotas: 100, recurrentes: 50, recurrentesUsd: 5, total: 150 });
+    expect(estimadoMes(res, 2)).toEqual({ cuotas: 0, recurrentes: 50, recurrentesUsd: 5, total: 50 });
   });
 });

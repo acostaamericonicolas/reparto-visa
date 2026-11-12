@@ -77,12 +77,36 @@ describe('gastos recurrentes en la proyección', () => {
 
   it('lista los recurrentes de cada persona junto con sus cuotas', () => {
     expect(cuotasPendientes(res, 'nico')).toEqual([
-      { fecha: '01.01.26', detalle: 'NETFLIX', cuota: '', recurrente: true, restantes: 3, porMes: 25, total: 75 },
+      { fecha: '01.01.26', detalle: 'NETFLIX', cuota: '', recurrente: true, todosLosMeses: true, restantes: 3, porMes: 25, total: 75 },
     ]);
   });
 
   it('estima lo que ya se sabe de los meses que todavía no tienen resumen', () => {
     expect(estimadoMes(res, 1)).toEqual({ cuotas: 100, recurrentes: 50, recurrentesUsd: 5, total: 150 });
     expect(estimadoMes(res, 2)).toEqual({ cuotas: 0, recurrentes: 50, recurrentesUsd: 5, total: 50 });
+  });
+});
+
+describe('gastos recurrentes con plazo', () => {
+  const res = resumen('2026-10-01', '14 Oct 26', [
+    item(100, { id: 'a', cuota: '01/15', partes: [{ p: 'ana', pesos: 100, usd: 0 }] }),
+    item(50, { id: 'b', detalle: 'GIMNASIO', recurrente: true, plazo: '08/10', partes: [{ p: 'nico', pesos: 50, usd: 0 }] }),
+    item(20, { id: 'c', detalle: 'NETFLIX', recurrente: true, partes: [{ p: 'nico', pesos: 20, usd: 0 }] }),
+    item(30, { id: 'd', detalle: 'TERMINADO', recurrente: true, plazo: '10/10', partes: [{ p: 'nico', pesos: 30, usd: 0 }] }),
+  ]);
+
+  it('proyecta un recurrente con plazo solo los meses que le quedan', () => {
+    const p = proyeccionCuotas(res, personas);
+    expect(p.etiquetas.length).toBe(14);
+    expect(p.series.find((s) => s.id === 'nico')?.datos.slice(0, 3)).toEqual([70, 70, 20]);
+    expect(p.recurrentes).toBe(70);
+  });
+
+  it('muestra el plazo en el detalle y marca los de todos los meses', () => {
+    expect(cuotasPendientes(res, 'nico')).toEqual([
+      { fecha: '01.01.26', detalle: 'NETFLIX', cuota: '', recurrente: true, todosLosMeses: true, restantes: 14, porMes: 20, total: 280 },
+      { fecha: '01.01.26', detalle: 'GIMNASIO', cuota: '08/10', recurrente: true, restantes: 2, porMes: 50, total: 100 },
+    ]);
+    expect(estimadoMes(res, 3).recurrentes).toBe(20);
   });
 });

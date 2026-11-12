@@ -20,6 +20,17 @@ export const esRecurrente = (r: Item): boolean => !!r.recurrente && puedeSerRecu
 export const claveRecurrente = (r: Item): string =>
   `${r.tarjeta}|${r.detalle.toUpperCase().replace(/\d+/g, '').replace(/\s+/g, ' ').trim()}`;
 
+/** "1/10" → { n: 1, total: 10 }. Null si no es un plazo válido (n entre 1 y el total). */
+export function leerPlazo(texto: string | undefined): { n: number; total: number } | null {
+  const m = /^\s*(\d{1,3})\s*\/\s*(\d{1,3})\s*$/.exec(texto ?? '');
+  if (!m) return null;
+  const [n, total] = [+m[1], +m[2]];
+  return n >= 1 && n <= total ? { n, total } : null;
+}
+
+/** Plazo con el formato del resumen: (1, 10) → "01/10". */
+export const formatoPlazo = (n: number, total: number): string => `${String(n).padStart(2, '0')}/${String(total).padStart(2, '0')}`;
+
 export function asignado(r: Item): { pesos: number; usd: number } {
   let pesos = 0;
   let usd = 0;
@@ -128,8 +139,19 @@ export function arrastrar(rows: Item[], otros: Resumen[], tarjetas: Record<strin
   for (const r of rows) {
     const recurrente = puedeSerRecurrente(r) ? ultimos.get(claveRecurrente(r)) : undefined;
     // Si se desmarcó a mano en este mes (false), no se vuelve a marcar ni se le copia el reparto.
-    const sigueRecurrente = !!recurrente && esRecurrente(recurrente.r) && r.recurrente !== false;
-    if (sigueRecurrente) r.recurrente = true;
+    // Con plazo: después del último mes ("10/10") ya no sigue.
+    const plazoAnterior = recurrente && leerPlazo(recurrente.r.plazo);
+    const mismo = !!recurrente && claveDe(recurrente.r) === claveDe(r);
+    const sigueRecurrente =
+      !!recurrente &&
+      esRecurrente(recurrente.r) &&
+      r.recurrente !== false &&
+      (!plazoAnterior || mismo || plazoAnterior.n < plazoAnterior.total);
+    if (sigueRecurrente) {
+      r.recurrente = true;
+      // El mismo cobro (al volver a importar ese mes) conserva su plazo; el del mes siguiente avanza uno.
+      if (plazoAnterior && !r.plazo) r.plazo = mismo ? recurrente!.r.plazo : formatoPlazo(plazoAnterior.n + 1, plazoAnterior.total);
+    }
     if (r.partes.length) continue;
     const o = conocidos.get(claveDe(r)) ?? (sigueRecurrente && recurrente!.r.partes.some((p) => p.p) ? recurrente : undefined);
     if (o) {

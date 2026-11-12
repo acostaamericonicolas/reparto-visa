@@ -148,8 +148,8 @@
                       <tr>
                         <td class="num">{{ c.fecha }}</td>
                         <td>{{ c.detalle }}</td>
-                        <td class="num">{{ c.recurrente ? 'Recurrente' : c.cuota }}</td>
-                        <td class="num">{{ c.restantes }}</td>
+                        <td class="num">{{ c.recurrente ? (c.cuota ? c.cuota + ' (recurrente)' : 'Recurrente') : c.cuota }}</td>
+                        <td class="num">{{ c.todosLosMeses ? 'Todos los meses' : c.restantes }}</td>
                         <td class="num">{{ c.porMes | pesos }}</td>
                         <td class="num">{{ c.total | pesos }}</td>
                       </tr>
@@ -162,7 +162,7 @@
                   <div class="cuota">
                     <strong>{{ c.detalle }}</strong>
                     <strong class="num">{{ c.total | pesos }}</strong>
-                    <span>{{ c.fecha }} · {{ c.recurrente ? 'recurrente · ' + c.restantes + ' meses proyectados' : 'cuota ' + c.cuota + ' · faltan ' + c.restantes }}</span>
+                    <span>{{ c.fecha }} · {{ c.todosLosMeses ? 'recurrente · todos los meses' : (c.recurrente ? 'recurrente · ' : '') + 'cuota ' + c.cuota + ' · faltan ' + c.restantes }}</span>
                     <span class="num">{{ c.porMes | pesos }} por mes</span>
                   </div>
                 }

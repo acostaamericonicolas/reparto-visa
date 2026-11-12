@@ -12,6 +12,8 @@ import {
   diferencia,
   dividir,
   esRecurrente,
+  formatoPlazo,
+  leerPlazo,
   moneda,
   pendiente,
   puedeSerRecurrente,
@@ -69,6 +71,20 @@ export class TablaItems {
   /** Marca o desmarca un gasto sin cuotas como recurrente (lo que se paga todos los meses). */
   protected alternarRecurrente(r: Item) {
     this.datos.cambiarRecurrente(this.resumen().meta.id, r.id, !esRecurrente(r));
+  }
+
+  /** "1/10" guarda el plazo como "01/10"; vacío lo borra (todos los meses); algo inválido vuelve a lo que estaba. */
+  protected cambiarPlazo(r: Item, evento: Event) {
+    const campo = evento.target as HTMLInputElement;
+    const texto = campo.value.trim();
+    const p = leerPlazo(texto);
+    if (texto && !p) {
+      campo.value = r.plazo ?? '';
+      return;
+    }
+    const plazo = p ? formatoPlazo(p.n, p.total) : '';
+    campo.value = plazo;
+    this.datos.cambiarPlazo(this.resumen().meta.id, r.id, plazo);
   }
 
   protected color(id: string) {

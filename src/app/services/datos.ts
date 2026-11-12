@@ -142,6 +142,16 @@ export class Datos {
     });
   }
 
+  /** Cambia el plazo de un gasto recurrente ("01/10"); vacío lo borra y vuelve a ser de todos los meses. */
+  cambiarPlazo(id: string, itemId: string, plazo: string) {
+    this.actualizar(id, (r) => {
+      const item = r.rows.find((x) => x.id === itemId);
+      if (!item) return;
+      if (plazo) item.plazo = plazo;
+      else delete item.plazo;
+    });
+  }
+
   /** Marca o desmarca "avisado" o "pagado" para una persona en un mes. */
   cambiarEstado(id: string, persona: string, campo: keyof EstadoPersona, valor: boolean) {
     this.actualizar(id, (r) => {

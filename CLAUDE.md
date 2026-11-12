@@ -6,7 +6,7 @@ Contexto y reglas de trabajo para Claude en este repo. El detalle funcional est�
 - Trabajar siempre sobre la rama `branch-acosta`. No tocar `main` ni otras ramas.
 - Todo cambio se prueba en el canal de prueba antes del deploy a producción:
   1. `npm run preview` (build + deploy al canal `prueba` de Firebase Hosting, expira en 7 días).
-  2. Probar en https://reparto-visa-acosta--prueba-8kkoatsj.web.app/?mes=2026-07-30
+  2. Probar en https://reparto-visa-acosta--prueba-jsdzdd3a.web.app/?mes=2026-07-30
   3. Solo si funciona bien: `npm run deploy` (build + deploy a producción).
 - Correr `npm test` antes de publicar.
 - Responder en español rioplatense.

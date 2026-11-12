@@ -13,6 +13,7 @@ import {
   moneda,
   pendiente,
   quitarParte,
+  visibleEn,
 } from '../../../shared/reparto';
 
 interface Grupo {
@@ -39,14 +40,16 @@ export class TablaItems {
   /** Ítems con el editor de partes abierto aunque todavía tengan una sola. */
   private abiertos = signal(new Set<string>());
 
+  /** Ítems divididos desplegados mientras hay una persona filtrada (clave: filtro + id, así cada filtro arranca plegado). */
+  private desplegados = signal(new Set<string>());
+
   protected personaFiltrada = computed(() => this.personas().find((p) => p.id === this.filtro()));
 
   protected grupos = computed<Grupo[]>(() => {
     const f = this.filtro();
     const grupos: Grupo[] = [];
     for (const r of this.resumen().rows) {
-      const visible = f === 'todos' || (f === '' ? pendiente(r) : r.partes.some((p) => p.p === f));
-      if (!visible) continue;
+      if (!visibleEn(r, f)) continue;
       const ultimo = grupos[grupos.length - 1];
       if (ultimo?.tarjeta === r.tarjeta) ultimo.items.push(r);
       else grupos.push({ tarjeta: r.tarjeta, items: [r] });
@@ -64,6 +67,29 @@ export class TablaItems {
 
   protected dividido(r: Item) {
     return r.partes.length > 1 || this.abiertos().has(r.id);
+  }
+
+  /**
+   * Con una persona filtrada, los ítems divididos se ven como una sola fila con su parte;
+   * el resto de las personas aparece al tocar "Dividido en N".
+   */
+  protected plegable(r: Item) {
+    return !!this.personaFiltrada() && r.partes.length > 1;
+  }
+
+  protected desplegado(r: Item) {
+    if (!this.dividido(r)) return false;
+    // Recién dividido desde acá: queda abierto para poder cargar las partes.
+    if (!this.plegable(r) || this.abiertos().has(r.id)) return true;
+    return this.desplegados().has(`${this.filtro()}|${r.id}`);
+  }
+
+  protected alternarDesplegado(r: Item) {
+    const clave = `${this.filtro()}|${r.id}`;
+    const desplegados = new Set(this.desplegados());
+    if (desplegados.has(clave)) desplegados.delete(clave);
+    else desplegados.add(clave);
+    this.desplegados.set(desplegados);
   }
 
   protected dueno(r: Item) {

@@ -30,6 +30,10 @@ export const pendiente = (r: Item): boolean => {
   return f.pesos > 0 || f.usd > 0;
 };
 
+/** Si un ítem entra en el filtro de Movimientos: 'todos', '' (sin asignar) o el id de una persona. */
+export const visibleEn = (r: Item, filtro: string): boolean =>
+  filtro === 'todos' || (filtro === '' ? pendiente(r) : r.partes.some((p) => p.p === filtro));
+
 /** Diferencia entre el ítem y la suma de sus partes, en su moneda (positiva = faltan, negativa = sobran). */
 export function diferencia(r: Item): number {
   const m = moneda(r);

@@ -101,7 +101,7 @@
     <details #movimientos class="panel movimientos" [open]="movimientosAbiertos()"
              (toggle)="movimientosAbiertos.set(movimientos.open)">
       <summary>
-        <h2>Movimientos ({{ r.rows.length }})</h2>
+        <h2>Movimientos ({{ cantidadMovimientos() }})</h2>
         @if (filtro() !== 'todos') {
           <span class="ayuda">· {{ filtro() === '' ? 'Sin asignar' : nombreFiltro() }}</span>
         } @else {

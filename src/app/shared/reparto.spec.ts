@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Item, Resumen } from '../models/resumen';
-import { ajustarParte, arrastrar, dividir, falta, quitarParte, ordenarPersonas, totalesPorPersona } from './reparto';
+import { ajustarParte, arrastrar, claveRecurrente, dividir, leerPlazo, falta, quitarParte, ordenarPersonas, totalesPorPersona, visibleEn } from './reparto';
 import { montoIngresado, repartoIgual } from './montos';
 import { detalleDePersona } from './detalle-persona';
 import { mesesFuturos } from './fechas';
@@ -84,6 +84,87 @@ describe('arrastrar', () => {
   });
 });
 
+describe('gastos recurrentes', () => {
+  const netflix = (pesos: number, extra: Partial<Item> = {}) => item(pesos, { detalle: 'NETFLIX.COM', ...extra });
+
+  it('reconoce el mismo gasto aunque cambien la fecha, el comprobante y los números del detalle', () => {
+    expect(claveRecurrente(item(1, { detalle: 'SPOTIFY P2A3B4', fecha: '03.02.26', comp: '9*' }))).toBe(
+      claveRecurrente(item(1, { detalle: 'SPOTIFY  P7A8B9' })),
+    );
+    expect(claveRecurrente(item(1, { detalle: 'SPOTIFY', tarjeta: 'OTRA' }))).not.toBe(claveRecurrente(item(1, { detalle: 'SPOTIFY' })));
+  });
+
+  it('al importar el mes siguiente, lo marca como recurrente y copia el reparto aunque cambie el monto', () => {
+    const anterior = netflix(10000, {
+      recurrente: true,
+      partes: [{ p: 'ana', pesos: 5000, usd: 0 }, { p: 'nico', pesos: 5000, usd: 0 }],
+    });
+    const nuevo = netflix(12000, { id: 'n', fecha: '03.02.26', comp: '77*' });
+    expect(arrastrar([nuevo], [resumen([anterior], '01 Ene 26')], { T: 'eli' })).toBe(1);
+    expect(nuevo.recurrente).toBe(true);
+    expect(nuevo.partes).toEqual([{ p: 'ana', pesos: 6000, usd: 0 }, { p: 'nico', pesos: 6000, usd: 0 }]);
+    expect(nuevo.origen).toBe('01 Ene 26');
+  });
+
+  it('manda la última vez que apareció: si se desmarcó, ya no se arrastra', () => {
+    const viejo = netflix(100, { recurrente: true, partes: [{ p: 'ana', pesos: 100, usd: 0 }] });
+    const desmarcado = netflix(100, { recurrente: false, partes: [{ p: 'ana', pesos: 100, usd: 0 }] });
+    const nuevo = netflix(100, { fecha: '03.03.26' });
+    expect(arrastrar([nuevo], [resumen([viejo], '01 Ene 26'), resumen([desmarcado], '01 Feb 26')])).toBe(0);
+    expect(nuevo.recurrente).toBeUndefined();
+    expect(nuevo.partes).toEqual([]);
+  });
+
+  it('no marca compras en cuotas ni pisa lo que ya está asignado o desmarcado a mano', () => {
+    const anterior = netflix(100, { recurrente: true, partes: [{ p: 'ana', pesos: 100, usd: 0 }] });
+    const enCuotas = netflix(100, { id: 'c', cuota: '01/03', fecha: '03.02.26' });
+    const asignado = netflix(100, { id: 'a', fecha: '04.02.26', partes: [{ p: 'nico', pesos: 100, usd: 0 }] });
+    const desmarcado = netflix(100, { id: 'd', fecha: '05.02.26', recurrente: false });
+    arrastrar([enCuotas, asignado, desmarcado], [resumen([anterior])]);
+    expect(enCuotas.recurrente).toBeUndefined();
+    expect(enCuotas.partes).toEqual([]);
+    expect(asignado.recurrente).toBe(true);
+    expect(asignado.partes[0].p).toBe('nico');
+    expect(desmarcado.recurrente).toBe(false);
+    expect(desmarcado.partes).toEqual([]);
+  });
+
+  it('entiende el plazo escrito a mano', () => {
+    expect(leerPlazo('1/10')).toEqual({ n: 1, total: 10 });
+    expect(leerPlazo(' 03 / 12 ')).toEqual({ n: 3, total: 12 });
+    expect(leerPlazo('11/10')).toBeNull();
+    expect(leerPlazo('0/10')).toBeNull();
+    expect(leerPlazo('')).toBeNull();
+  });
+
+  it('con plazo, avanza un mes al importar y después del último deja de seguir', () => {
+    const anterior = netflix(100, { recurrente: true, plazo: '01/10', partes: [{ p: 'ana', pesos: 100, usd: 0 }] });
+    const nuevo = netflix(100, { fecha: '03.02.26' });
+    arrastrar([nuevo], [resumen([anterior])]);
+    expect(nuevo.recurrente).toBe(true);
+    expect(nuevo.plazo).toBe('02/10');
+
+    const ultimo = netflix(100, { recurrente: true, plazo: '10/10', partes: [{ p: 'ana', pesos: 100, usd: 0 }] });
+    const despues = netflix(100, { fecha: '03.03.26' });
+    expect(arrastrar([despues], [resumen([ultimo])])).toBe(0);
+    expect(despues.recurrente).toBeUndefined();
+    expect(despues.plazo).toBeUndefined();
+  });
+
+  it('al volver a importar el mismo mes no le avanza el plazo', () => {
+    const propio = netflix(100, { recurrente: true, plazo: '04/10', partes: [{ p: 'ana', pesos: 100, usd: 0 }] });
+    const reimportado = netflix(100);
+    arrastrar([reimportado], [resumen([propio])]);
+    expect(reimportado.plazo).toBe('04/10');
+
+    const ultimo = netflix(100, { recurrente: true, plazo: '10/10', partes: [{ p: 'ana', pesos: 100, usd: 0 }] });
+    const ultimoReimportado = netflix(100);
+    arrastrar([ultimoReimportado], [resumen([ultimo])]);
+    expect(ultimoReimportado.recurrente).toBe(true);
+    expect(ultimoReimportado.plazo).toBe('10/10');
+  });
+});
+
 describe('totales', () => {
   it('suma por persona y cuenta lo que falta asignar', () => {
     const r1 = item(100, { partes: [{ p: 'ana', pesos: 60, usd: 0 }, { p: '', pesos: 40, usd: 0 }] });
@@ -123,5 +204,21 @@ describe('mesesFuturos', () => {
   it('muestra los dos meses que siguen al último resumen cargado', () => {
     expect(mesesFuturos('2026-10')).toEqual(['2026-11', '2026-12']);
     expect(mesesFuturos('2026-12')).toEqual(['2027-01', '2027-02']);
+  });
+});
+
+describe('visibleEn', () => {
+  const solo = item(100, { partes: [{ p: 'eli', pesos: 100, usd: 0 }] });
+  const dividido = item(100, { partes: [{ p: 'eli', pesos: 50, usd: 0 }, { p: 'pool', pesos: 50, usd: 0 }] });
+  const nuevo = item(100);
+  const filas = [solo, dividido, nuevo];
+  const cuantos = (f: string) => filas.filter((r) => visibleEn(r, f)).length;
+
+  it('cuenta los movimientos de cada filtro', () => {
+    expect(cuantos('todos')).toBe(3);
+    expect(cuantos('eli')).toBe(2);
+    expect(cuantos('pool')).toBe(1);
+    expect(cuantos('')).toBe(1);
+    expect(cuantos('nadie')).toBe(0);
   });
 });

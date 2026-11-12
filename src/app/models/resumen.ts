@@ -29,6 +29,16 @@ export interface Item {
   items?: ConceptoImpuesto[];
   /** Cierre del mes del que se copió el reparto, si se autocompletó. */
   origen?: string;
+  /**
+   * Gasto sin cuotas que se paga todos los meses (una suscripción, por ejemplo). Se proyecta en los meses
+   * siguientes y, al importar el próximo resumen, el mismo gasto se marca y se reparte igual.
+   */
+  recurrente?: boolean;
+  /**
+   * Plazo de un gasto recurrente que no es para siempre, como una cuota propia ("01/10" = el primero de 10 meses).
+   * Vacío = todos los meses. Al importar el mes siguiente avanza solo ("02/10") y, después del último, deja de seguir.
+   */
+  plazo?: string;
 }
 
 /** Total que el banco informa por tarjeta, para controlar la lectura del PDF. */

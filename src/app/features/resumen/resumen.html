@@ -101,7 +101,7 @@
     <details #movimientos class="panel movimientos" [open]="movimientosAbiertos()"
              (toggle)="movimientosAbiertos.set(movimientos.open)">
       <summary>
-        <h2>Movimientos ({{ r.rows.length }})</h2>
+        <h2>Movimientos ({{ cantidadMovimientos() }})</h2>
         @if (filtro() !== 'todos') {
           <span class="ayuda">· {{ filtro() === '' ? 'Sin asignar' : nombreFiltro() }}</span>
         } @else {
@@ -111,7 +111,8 @@
       <div class="cabecera-tabla">
         <span class="ayuda">
           <span class="etiqueta auto">Autocompletado</span> sale de otro mes ·
-          <span class="etiqueta nuevo">Nuevo</span> falta asignar
+          <span class="etiqueta nuevo">Nuevo</span> falta asignar ·
+          <span class="etiqueta recurrente">Recurrente</span> se paga todos los meses
         </span>
         <button class="boton boton-chico" (click)="completar()" title="Copia el reparto de otros meses a los ítems sin asignar">
           Completar desde otros meses
@@ -126,6 +127,12 @@
         <span class="hero-etiqueta">Saldo del cierre</span>
       </div>
       <div class="hero-monto">Sin resumen todavía</div>
+      @if (estimado(); as e) {
+        <div class="hero-sub estimado">
+          Ya se sabe que vienen {{ e.total | pesos }}@if (e.recurrentesUsd) { + {{ e.recurrentesUsd | dolares }} }:
+          {{ e.cuotas | pesos }} en cuotas y {{ e.recurrentes | pesos }}@if (e.recurrentesUsd) { + {{ e.recurrentesUsd | dolares }} } en gastos recurrentes.
+        </div>
+      }
       <div class="saldo-pie">
         <span class="hero-sub">Importá el PDF de este mes para ver el reparto.</span>
         <button class="hero-boton" type="button" [disabled]="importando()" (click)="archivo.click()">

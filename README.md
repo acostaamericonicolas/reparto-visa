@@ -5,9 +5,10 @@ App web para repartir el resumen de la tarjeta Visa ICBC entre las personas que 
 - Importa el PDF del resumen y arma la tabla (fecha, detalle, cuota, pesos, dólares), controlando que cada tarjeta sume lo mismo que informa el banco.
 - Cada ítem se asigna a una persona o se divide entre varias.
 - Las cuotas que ya se repartieron en otros meses se completan solas.
+- Un gasto sin cuotas que se paga todos los meses (una suscripción) se marca como **recurrente** con el botón ↻: al importar el resumen siguiente, el mismo gasto (misma tarjeta y detalle) se marca solo y copia el reparto, y se suma en la proyección y en lo estimado de los meses que todavía no tienen PDF. Si no es para siempre, en la columna Cuota se le pone el plazo (ej. `1/10`): avanza solo cada mes y después del último deja de seguir.
 - Los impuestos y cargos van en un solo ítem, con el desglose en una ventana.
 - Muestra el total de cada persona y copia su detalle para mandarlo.
-- Gráficos: gasto por mes y por persona, variación contra el mes anterior y proyección de las cuotas pendientes.
+- Gráficos: gasto por mes y por persona, variación contra el mes anterior y proyección de las cuotas pendientes y los gastos recurrentes.
 
 ## Hogar
 

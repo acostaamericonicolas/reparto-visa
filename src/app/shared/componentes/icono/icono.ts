@@ -19,6 +19,7 @@ const TRAZOS: Record<string, string> = {
   calendario: 'M4 6h16v14H4z M4 10h16 M8 3v4 M16 3v4',
   salir: 'M14 8V5H4v14h10v-3 M9 12h11 M17 9l3 3-3 3',
   tarjeta: 'M3 6h18v12H3z M3 10h18 M7 15h3',
+  repetir: 'M20 12a8 8 0 0 1-13.7 5.6 M4 12a8 8 0 0 1 13.7-5.6 M18 3v4h-4 M6 21v-4h4',
 };
 
 /**

@@ -32,6 +32,9 @@
                 } @else if (r.origen) {
                   <span class="etiqueta auto" [title]="'Reparto copiado del cierre ' + r.origen">Autocompletado</span>
                 }
+                @if (esRecurrente(r)) {
+                  <span class="etiqueta recurrente" title="Se paga todos los meses: se tiene en cuenta en los meses siguientes">Recurrente</span>
+                }
               </td>
               <td class="fecha c-cuota">@if (r.cuota) {<span class="movil">cuota </span>}{{ r.cuota }}</td>
               <td class="num c-pesos">
@@ -70,7 +73,17 @@
                 }
               </td>
               <td class="c-accion">
-                <button class="boton boton-chico" (click)="alternarDivision(r)">{{ dividido(r) ? 'Unir' : 'Dividir' }}</button>
+                <div class="acciones">
+                  @if (puedeSerRecurrente(r)) {
+                    <button class="boton boton-chico boton-recurrente" type="button" [attr.aria-pressed]="esRecurrente(r)"
+                            [attr.aria-label]="'Gasto recurrente: ' + r.detalle"
+                            [title]="esRecurrente(r) ? 'Recurrente: se proyecta en los meses siguientes. Tocá para desmarcarlo' : 'Marcar como recurrente (lo pagás todos los meses)'"
+                            (click)="alternarRecurrente(r)">
+                      <app-icono nombre="repetir" [tamano]="14" />
+                    </button>
+                  }
+                  <button class="boton boton-chico" (click)="alternarDivision(r)">{{ dividido(r) ? 'Unir' : 'Dividir' }}</button>
+                </div>
               </td>
             </tr>
 

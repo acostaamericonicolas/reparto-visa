@@ -2,6 +2,7 @@ import { Component, computed, inject, input, output, signal } from '@angular/cor
 import { Persona } from '../../../models/config';
 import { Item, Parte, Resumen } from '../../../models/resumen';
 import { MontoPipe } from '../../../pipes/monto-pipe';
+import { Icono } from '../../../shared/componentes/icono/icono';
 import { Datos } from '../../../services/datos';
 import { colorPersona } from '../../../shared/colores';
 import { montoIngresado, r2 } from '../../../shared/montos';
@@ -10,8 +11,10 @@ import {
   asignarA,
   diferencia,
   dividir,
+  esRecurrente,
   moneda,
   pendiente,
+  puedeSerRecurrente,
   quitarParte,
   visibleEn,
 } from '../../../shared/reparto';
@@ -24,7 +27,7 @@ interface Grupo {
 /** Tabla del resumen agrupada por tarjeta. Cada ítem se asigna a una persona o se divide en partes. */
 @Component({
   selector: 'app-tabla-items',
-  imports: [MontoPipe],
+  imports: [MontoPipe, Icono],
   templateUrl: './tabla-items.html',
   styleUrl: './tabla-items.css',
 })
@@ -60,6 +63,13 @@ export class TablaItems {
   protected readonly pendiente = pendiente;
   protected readonly moneda = moneda;
   protected readonly diferencia = diferencia;
+  protected readonly puedeSerRecurrente = puedeSerRecurrente;
+  protected readonly esRecurrente = esRecurrente;
+
+  /** Marca o desmarca un gasto sin cuotas como recurrente (lo que se paga todos los meses). */
+  protected alternarRecurrente(r: Item) {
+    this.datos.cambiarRecurrente(this.resumen().meta.id, r.id, !esRecurrente(r));
+  }
 
   protected color(id: string) {
     return colorPersona(this.personas(), id);

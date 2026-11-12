@@ -113,6 +113,15 @@ export class Graficos {
     return elegida === null ? this.totalComprometido() : (this.comprometido().find((c) => c.id === elegida)?.total ?? 0);
   });
 
+  /** Lo que suman por mes los gastos recurrentes: de todas las personas o de la elegida. */
+  protected recurrentesProyeccion = computed(() => {
+    const id = this.mesProyeccion();
+    const elegida = this.personaProyeccion();
+    if (!id) return 0;
+    if (elegida === null) return this.proyeccion()?.recurrentes ?? 0;
+    return r2(this.cuotasDeLaPersona().filter((c) => c.recurrente).reduce((s, c) => s + c.porMes, 0));
+  });
+
   /** Último mes con cuotas y lo que vence el mes que viene, para la tarjeta de la proyección. */
   protected hasta = computed(() => this.proyeccion()?.etiquetas.at(-1) ?? '');
   protected proximoMes = computed(() => {

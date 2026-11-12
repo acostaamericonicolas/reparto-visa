@@ -134,6 +134,14 @@ export class Datos {
     });
   }
 
+  /** Marca o desmarca un gasto como recurrente. Se guarda también el `false`, para que no se vuelva a marcar solo. */
+  cambiarRecurrente(id: string, itemId: string, valor: boolean) {
+    this.actualizar(id, (r) => {
+      const item = r.rows.find((x) => x.id === itemId);
+      if (item) item.recurrente = valor;
+    });
+  }
+
   /** Marca o desmarca "avisado" o "pagado" para una persona en un mes. */
   cambiarEstado(id: string, persona: string, campo: keyof EstadoPersona, valor: boolean) {
     this.actualizar(id, (r) => {

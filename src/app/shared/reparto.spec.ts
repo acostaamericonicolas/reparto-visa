@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Item, Resumen } from '../models/resumen';
-import { ajustarParte, arrastrar, claveRecurrente, dividir, falta, quitarParte, ordenarPersonas, totalesPorPersona, visibleEn } from './reparto';
+import { ajustarParte, arrastrar, claveRecurrente, dividir, leerPlazo, falta, quitarParte, ordenarPersonas, totalesPorPersona, visibleEn } from './reparto';
 import { montoIngresado, repartoIgual } from './montos';
 import { detalleDePersona } from './detalle-persona';
 import { mesesFuturos } from './fechas';
@@ -127,6 +127,41 @@ describe('gastos recurrentes', () => {
     expect(asignado.partes[0].p).toBe('nico');
     expect(desmarcado.recurrente).toBe(false);
     expect(desmarcado.partes).toEqual([]);
+  });
+
+  it('entiende el plazo escrito a mano', () => {
+    expect(leerPlazo('1/10')).toEqual({ n: 1, total: 10 });
+    expect(leerPlazo(' 03 / 12 ')).toEqual({ n: 3, total: 12 });
+    expect(leerPlazo('11/10')).toBeNull();
+    expect(leerPlazo('0/10')).toBeNull();
+    expect(leerPlazo('')).toBeNull();
+  });
+
+  it('con plazo, avanza un mes al importar y después del último deja de seguir', () => {
+    const anterior = netflix(100, { recurrente: true, plazo: '01/10', partes: [{ p: 'ana', pesos: 100, usd: 0 }] });
+    const nuevo = netflix(100, { fecha: '03.02.26' });
+    arrastrar([nuevo], [resumen([anterior])]);
+    expect(nuevo.recurrente).toBe(true);
+    expect(nuevo.plazo).toBe('02/10');
+
+    const ultimo = netflix(100, { recurrente: true, plazo: '10/10', partes: [{ p: 'ana', pesos: 100, usd: 0 }] });
+    const despues = netflix(100, { fecha: '03.03.26' });
+    expect(arrastrar([despues], [resumen([ultimo])])).toBe(0);
+    expect(despues.recurrente).toBeUndefined();
+    expect(despues.plazo).toBeUndefined();
+  });
+
+  it('al volver a importar el mismo mes no le avanza el plazo', () => {
+    const propio = netflix(100, { recurrente: true, plazo: '04/10', partes: [{ p: 'ana', pesos: 100, usd: 0 }] });
+    const reimportado = netflix(100);
+    arrastrar([reimportado], [resumen([propio])]);
+    expect(reimportado.plazo).toBe('04/10');
+
+    const ultimo = netflix(100, { recurrente: true, plazo: '10/10', partes: [{ p: 'ana', pesos: 100, usd: 0 }] });
+    const ultimoReimportado = netflix(100);
+    arrastrar([ultimoReimportado], [resumen([ultimo])]);
+    expect(ultimoReimportado.recurrente).toBe(true);
+    expect(ultimoReimportado.plazo).toBe('10/10');
   });
 });
 

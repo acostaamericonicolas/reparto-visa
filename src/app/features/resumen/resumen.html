@@ -129,8 +129,8 @@
       <div class="hero-monto">Sin resumen todavía</div>
       @if (estimado(); as e) {
         <div class="hero-sub estimado">
-          Ya se sabe que vienen {{ e.total | pesos }}@if (e.recurrentesUsd) { + {{ e.recurrentesUsd | dolares }} }:
-          {{ e.cuotas | pesos }} en cuotas y {{ e.recurrentes | pesos }}@if (e.recurrentesUsd) { + {{ e.recurrentesUsd | dolares }} } en gastos recurrentes.
+          Ya se sabe que vienen {{ e.total | pesos }}@if (e.usd) { + {{ e.usd | dolares }} }
+          ({{ e.cuotas | pesos }} en cuotas y {{ e.recurrentes | pesos }} en gastos recurrentes@if (e.usd) {; los dólares, entre las dos}).
         </div>
       }
       <div class="saldo-pie">

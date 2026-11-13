@@ -8,12 +8,14 @@ import { Grafico, SerieGrafico } from '../../shared/componentes/grafico/grafico'
 import { fechaIso, nombreMes } from '../../shared/fechas';
 import { Serie, cuotasPendientes, gastoPorMes, proyeccionCuotas, variacion } from '../../shared/estadisticas';
 import { r2 } from '../../shared/montos';
+import { totalesPorPersona } from '../../shared/reparto';
+import { MontoPipe } from '../../pipes/monto-pipe';
 
 type Moneda = 'pesos' | 'usd';
 
 @Component({
   selector: 'app-graficos',
-  imports: [Grafico, PesosPipe, DolaresPipe, VariacionPipe],
+  imports: [Grafico, PesosPipe, DolaresPipe, VariacionPipe, MontoPipe],
   templateUrl: './graficos.html',
   styleUrl: './graficos.css',
 })
@@ -60,7 +62,7 @@ export class Graficos {
   );
   protected proyeccion = computed(() => {
     const id = this.mesProyeccion();
-    return id ? proyeccionCuotas(this.datos.resumenes()[id], this.datos.personas()) : null;
+    return id ? proyeccionCuotas(this.datos.resumenes()[id], this.datos.personas(), this.moneda()) : null;
   });
   /** Persona elegida en la proyección (null = todas; '' = la parte sin asignar). */
   protected personaProyeccion = signal<string | null>(null);
@@ -91,7 +93,7 @@ export class Graficos {
   protected cuotasDeLaPersona = computed(() => {
     const id = this.mesProyeccion();
     const elegida = this.personaProyeccion();
-    return id && elegida !== null ? cuotasPendientes(this.datos.resumenes()[id], elegida) : [];
+    return id && elegida !== null ? cuotasPendientes(this.datos.resumenes()[id], elegida, this.moneda()) : [];
   });
   protected nombreElegido = computed(() => this.comprometido().find((c) => c.id === this.personaProyeccion())?.nombre ?? '');
 
@@ -111,6 +113,23 @@ export class Graficos {
   protected montoProyeccion = computed(() => {
     const elegida = this.personaProyeccion();
     return elegida === null ? this.totalComprometido() : (this.comprometido().find((c) => c.id === elegida)?.total ?? 0);
+  });
+
+  /**
+   * Cuánto se pagó en el resumen elegido (de todas las personas o de la elegida) y cuánto de eso se repite el mes
+   * siguiente: la diferencia son gastos de una sola vez, que no se proyectan.
+   */
+  protected comparacion = computed(() => {
+    const id = this.mesProyeccion();
+    const p = this.proyeccion();
+    if (!id || !p) return null;
+    const res = this.datos.resumenes()[id];
+    const tot = totalesPorPersona(res, this.datos.personas());
+    const m = this.moneda();
+    const elegida = this.personaProyeccion();
+    const pagado = elegida === null ? r2([...tot.values()].reduce((s, t) => s + t[m], 0)) : (tot.get(elegida)?.[m] ?? 0);
+    const sigue = this.proximoMes();
+    return { mes: nombreMes(fechaIso(res.meta.vence) ?? id), pagado, sigue, unaVez: r2(Math.max(0, pagado - sigue)) };
   });
 
   /** Lo que suman por mes los gastos recurrentes: de todas las personas o de la elegida. */

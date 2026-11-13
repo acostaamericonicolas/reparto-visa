@@ -90,18 +90,24 @@
               </select>
             </label>
           </div>
-          <div class="hero-monto">{{ montoProyeccion() | pesos }}</div>
+          <div class="hero-monto">{{ prefijo() }}{{ montoProyeccion() | monto }}</div>
           <div class="hero-sub">
             @if (p.etiquetas.length) {
-              Próximo mes {{ proximoMes() | pesos }} · hasta {{ hasta() }}
+              Próximo mes {{ prefijo() }}{{ proximoMes() | monto }} · hasta {{ hasta() }}
             } @else {
-              Ese resumen no tiene cuotas pendientes ni gastos recurrentes
+              Ese resumen no tiene cuotas pendientes ni gastos recurrentes en {{ moneda() === 'pesos' ? 'pesos' : 'dólares' }}
             }
           </div>
           <div class="hero-sub">
-            Lo que le queda pagar a cada persona por las cuotas pendientes y los gastos marcados como recurrentes
-            @if (recurrentesProyeccion()) { ({{ recurrentesProyeccion() | pesos }} por mes) }. Solo pesos; no incluye gastos nuevos.
+            Cuotas pendientes y gastos marcados como recurrentes@if (recurrentesProyeccion()) { ({{ prefijo() }}{{ recurrentesProyeccion() | monto }} por mes en recurrentes)}.
+            En {{ moneda() === 'pesos' ? 'pesos' : 'dólares' }}: cambiá arriba para ver la otra moneda.
           </div>
+          @if (comparacion(); as c) {
+            <div class="hero-sub">
+              En {{ c.mes }} se pagó {{ prefijo() }}{{ c.pagado | monto }}: {{ prefijo() }}{{ c.sigue | monto }} se repite el mes que viene
+              y {{ prefijo() }}{{ c.unaVez | monto }} fueron gastos de una sola vez, que no se proyectan.
+            </div>
+          }
         </div>
 
         @if (p.etiquetas.length) {
@@ -109,22 +115,22 @@
             <div class="comprometido" role="group" aria-label="Filtrar por persona">
               <button class="monto-persona" type="button" [attr.aria-pressed]="personaProyeccion() === null" (click)="personaProyeccion.set(null)">
                 <span>Todas</span>
-                <strong class="num">{{ totalComprometido() | pesos }}</strong>
+                <strong class="num">{{ prefijo() }}{{ totalComprometido() | monto }}</strong>
               </button>
               @for (c of comprometido(); track c.id) {
                 <button class="monto-persona" type="button" [attr.aria-pressed]="personaProyeccion() === c.id" (click)="alternarPersonaProyeccion(c.id)">
                   <span><span class="punto" [style.background]="c.color"></span> {{ c.nombre }}</span>
-                  <strong class="num">{{ c.total | pesos }}</strong>
+                  <strong class="num">{{ prefijo() }}{{ c.total | monto }}</strong>
                 </button>
               }
             </div>
 
-            <app-grafico [etiquetas]="p.etiquetas" [series]="seriesProyeccion()"
+            <app-grafico [etiquetas]="p.etiquetas" [series]="seriesProyeccion()" [prefijo]="prefijo()"
                          descripcion="Barras apiladas con las cuotas que vencen cada mes por persona" />
             @if (personaProyeccion() === null) {
               <p class="ayuda">
                 La línea punteada es lo que informa el banco en "Cuotas a vencer" (sin los gastos recurrentes).
-                @if (p.bancoDesde) { El banco informa además {{ p.bancoDesde.pesos | pesos }} {{ p.bancoDesde.mes.replace('Desde', 'a partir de') }}. }
+                @if (p.bancoDesde) { El banco informa además {{ prefijo() }}{{ p.bancoDesde.pesos | monto }} {{ p.bancoDesde.mes.replace('Desde', 'a partir de') }}. }
               </p>
             }
 
@@ -150,8 +156,8 @@
                         <td>{{ c.detalle }}</td>
                         <td class="num">{{ c.recurrente ? (c.cuota ? c.cuota + ' (recurrente)' : 'Recurrente') : c.cuota }}</td>
                         <td class="num">{{ c.todosLosMeses ? 'Todos los meses' : c.restantes }}</td>
-                        <td class="num">{{ c.porMes | pesos }}</td>
-                        <td class="num">{{ c.total | pesos }}</td>
+                        <td class="num">{{ prefijo() }}{{ c.porMes | monto }}</td>
+                        <td class="num">{{ prefijo() }}{{ c.total | monto }}</td>
                       </tr>
                     }
                   </tbody>
@@ -161,9 +167,9 @@
                 @for (c of cuotasDeLaPersona(); track $index) {
                   <div class="cuota">
                     <strong>{{ c.detalle }}</strong>
-                    <strong class="num">{{ c.total | pesos }}</strong>
+                    <strong class="num">{{ prefijo() }}{{ c.total | monto }}</strong>
                     <span>{{ c.fecha }} · {{ c.todosLosMeses ? 'recurrente · todos los meses' : (c.recurrente ? 'recurrente · ' : '') + 'cuota ' + c.cuota + ' · faltan ' + c.restantes }}</span>
-                    <span class="num">{{ c.porMes | pesos }} por mes</span>
+                    <span class="num">{{ prefijo() }}{{ c.porMes | monto }} por mes</span>
                   </div>
                 }
               </div>

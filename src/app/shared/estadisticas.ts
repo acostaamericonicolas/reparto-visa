@@ -1,5 +1,5 @@
 import { Persona } from '../models/config';
-import { CuotaAVencer, Item, Resumen } from '../models/resumen';
+import { CuotaAVencer, Item, Moneda, Resumen } from '../models/resumen';
 import { fechaIso, mesCorto, sumarMeses } from './fechas';
 import { r2 } from './montos';
 import { claveDe, esRecurrente, falta, leerPlazo } from './reparto';
@@ -89,11 +89,11 @@ interface CompraEnCuotas {
 }
 
 /** Si una compra aparece varias veces en el mes (cuotas adelantadas), manda la de número más alto. */
-function comprasEnCuotas(res: Resumen): CompraEnCuotas[] {
+function comprasEnCuotas(res: Resumen, moneda: Moneda = 'pesos'): CompraEnCuotas[] {
   const porCompra = new Map<string, CompraEnCuotas>();
   for (const r of res.rows) {
     const m = /^(\d+)\/(\d+)$/.exec(r.cuota);
-    if (!m || !r.pesos) continue;
+    if (!m || !r[moneda]) continue;
     const [n, total] = [+m[1], +m[2]];
     const previo = porCompra.get(claveDe(r));
     if (!previo || n > previo.n) porCompra.set(claveDe(r), { n, total, row: r });
@@ -107,10 +107,10 @@ interface Recurrente {
   restantes: number | null;
 }
 
-/** Gastos recurrentes del resumen que se proyectan (solo los que tienen pesos y no terminaron su plazo). */
-function recurrentesDe(res: Resumen): Recurrente[] {
+/** Gastos recurrentes del resumen que se proyectan (los que tienen monto en esa moneda y no terminaron su plazo). */
+function recurrentesDe(res: Resumen, moneda: Moneda = 'pesos'): Recurrente[] {
   return res.rows
-    .filter((r) => esRecurrente(r) && r.pesos)
+    .filter((r) => esRecurrente(r) && r[moneda])
     .map((row) => {
       const p = leerPlazo(row.plazo);
       return { row, restantes: p ? p.total - p.n : null };
@@ -122,8 +122,9 @@ function recurrentesDe(res: Resumen): Recurrente[] {
  * Cuántos resúmenes siguientes se proyectan: hasta la última cuota (o el último mes de un recurrente con plazo),
  * y al menos `MESES_RECURRENTES` si hay recurrentes de todos los meses.
  */
-function horizonteDe(res: Resumen, compras = comprasEnCuotas(res)): number {
-  const recurrentes = recurrentesDe(res);
+function horizonteDe(res: Resumen, moneda: Moneda): number {
+  const compras = comprasEnCuotas(res, moneda);
+  const recurrentes = recurrentesDe(res, moneda);
   return Math.max(
     0,
     ...compras.map((c) => c.total - c.n),
@@ -151,11 +152,11 @@ export interface CuotaPendiente {
  * Cuotas que le quedan a una persona ('' = la parte sin asignar), de la que más debe a la que menos.
  * Los gastos recurrentes se cuentan en todos los meses proyectados.
  */
-export function cuotasPendientes(res: Resumen, persona: string): CuotaPendiente[] {
-  const compras = comprasEnCuotas(res);
-  const horizonte = horizonteDe(res, compras);
+export function cuotasPendientes(res: Resumen, persona: string, moneda: Moneda = 'pesos'): CuotaPendiente[] {
+  const compras = comprasEnCuotas(res, moneda);
+  const horizonte = horizonteDe(res, moneda);
   const porMesDe = (row: Item) =>
-    persona ? r2(row.partes.filter((p) => p.p === persona).reduce((s, p) => s + (p.pesos || 0), 0)) : falta(row).pesos;
+    persona ? r2(row.partes.filter((p) => p.p === persona).reduce((s, p) => s + (p[moneda] || 0), 0)) : falta(row)[moneda];
   const cuotas = compras
     .filter((c) => c.n < c.total)
     .map(({ n, total, row }): CuotaPendiente => {
@@ -163,7 +164,7 @@ export function cuotasPendientes(res: Resumen, persona: string): CuotaPendiente[
       const restantes = total - n;
       return { fecha: row.fecha, detalle: row.detalle, cuota: row.cuota, restantes, porMes, total: r2(porMes * restantes) };
     });
-  const recurrentes = recurrentesDe(res).map(({ row, restantes }): CuotaPendiente => {
+  const recurrentes = recurrentesDe(res, moneda).map(({ row, restantes }): CuotaPendiente => {
     const porMes = porMesDe(row);
     const meses = restantes ?? horizonte;
     return {
@@ -183,23 +184,24 @@ export function cuotasPendientes(res: Resumen, persona: string): CuotaPendiente[
 /**
  * Cuánto le queda pagar a cada persona en los próximos resúmenes, según las cuotas pendientes del resumen dado
  * y sus gastos recurrentes. Una cuota 05/12 suma su monto en los 7 resúmenes siguientes; un recurrente, en todos
- * los proyectados. Solo cuenta pesos.
+ * los proyectados. Pesos y dólares van por separado (`moneda`).
  */
-export function proyeccionCuotas(res: Resumen, personas: Persona[]): Proyeccion {
-  const compras = comprasEnCuotas(res);
-  const horizonte = horizonteDe(res, compras);
+export function proyeccionCuotas(res: Resumen, personas: Persona[], moneda: Moneda = 'pesos'): Proyeccion {
+  const compras = comprasEnCuotas(res, moneda);
+  const recurrentes = recurrentesDe(res, moneda);
+  const horizonte = horizonteDe(res, moneda);
   const ids = [...personas.map((p) => p.id), ''];
   const datos = new Map(ids.map((id) => [id, Array<number>(horizonte).fill(0)]));
 
   const meses = [
     ...compras.map(({ n, total, row }) => ({ row, cantidad: total - n })),
-    ...recurrentesDe(res).map(({ row, restantes }) => ({ row, cantidad: restantes ?? horizonte })),
+    ...recurrentes.map(({ row, restantes }) => ({ row, cantidad: restantes ?? horizonte })),
   ];
   for (const { row, cantidad } of meses) {
-    const sinDueno = falta(row).pesos;
+    const sinDueno = falta(row)[moneda];
     for (let k = 0; k < cantidad; k++) {
       for (const p of row.partes) {
-        if (p.p && datos.has(p.p)) datos.get(p.p)![k] = r2(datos.get(p.p)![k] + (p.pesos || 0));
+        if (p.p && datos.has(p.p)) datos.get(p.p)![k] = r2(datos.get(p.p)![k] + (p[moneda] || 0));
       }
       if (sinDueno) datos.get('')![k] = r2(datos.get('')![k] + sinDueno);
     }
@@ -211,8 +213,8 @@ export function proyeccionCuotas(res: Resumen, personas: Persona[]): Proyeccion 
     .map((id) => ({ id, nombre: id ? (personas.find((p) => p.id === id)?.nombre ?? '') : SIN_ASIGNAR, datos: datos.get(id)! }))
     .filter((s) => s.datos.some((v) => v !== 0));
 
-  // El banco informa a partir del próximo resumen, en orden: la posición i corresponde al mes i + 1.
-  const informadas = (res.meta.cuotasAVencer ?? []).filter((c) => !c.mes.startsWith('Desde'));
+  // El banco informa a partir del próximo resumen, en orden: la posición i corresponde al mes i + 1. Solo en pesos.
+  const informadas = moneda === 'pesos' ? (res.meta.cuotasAVencer ?? []).filter((c) => !c.mes.startsWith('Desde')) : [];
   const banco = etiquetas.map((_, k) => informadas[k]?.pesos ?? null);
 
   return {
@@ -220,8 +222,8 @@ export function proyeccionCuotas(res: Resumen, personas: Persona[]): Proyeccion 
     series,
     total: etiquetas.map((_, k) => r2(ids.reduce((s, id) => s + datos.get(id)![k], 0))),
     banco,
-    bancoDesde: res.meta.cuotasAVencer?.find((c) => c.mes.startsWith('Desde')),
-    recurrentes: r2(recurrentesDe(res).reduce((s, r) => s + r.row.pesos, 0)),
+    bancoDesde: moneda === 'pesos' ? res.meta.cuotasAVencer?.find((c) => c.mes.startsWith('Desde')) : undefined,
+    recurrentes: r2(recurrentes.reduce((s, r) => s + r.row[moneda], 0)),
   };
 }
 
@@ -230,23 +232,27 @@ export interface Estimado {
   cuotas: number;
   /** Gastos recurrentes en pesos. */
   recurrentes: number;
-  /** Gastos recurrentes que se pagan solo en dólares (no entran en la proyección en pesos). */
-  recurrentesUsd: number;
+  /** Total en pesos. */
   total: number;
+  /** Cuotas y recurrentes en dólares. */
+  usd: number;
 }
 
 /** Lo que ya se sabe que va a venir en el resumen `k` meses después de `res` (k = 1 es el siguiente). */
 export function estimadoMes(res: Resumen, k: number): Estimado {
-  const cuotas = r2(
-    comprasEnCuotas(res)
-      .filter((c) => c.total - c.n >= k)
-      .reduce((s, c) => s + c.row.pesos, 0),
-  );
-  const sigue = (r: Item) => {
-    const p = leerPlazo(r.plazo);
-    return !p || p.total - p.n >= k;
-  };
-  const recurrentes = r2(recurrentesDe(res).filter((r) => sigue(r.row)).reduce((s, r) => s + r.row.pesos, 0));
-  const recurrentesUsd = r2(res.rows.filter((r) => esRecurrente(r) && !r.pesos && sigue(r)).reduce((s, r) => s + r.usd, 0));
-  return { cuotas, recurrentes, recurrentesUsd, total: r2(cuotas + recurrentes) };
+  const cuotasEn = (m: Moneda) =>
+    r2(
+      comprasEnCuotas(res, m)
+        .filter((c) => c.total - c.n >= k)
+        .reduce((s, c) => s + c.row[m], 0),
+    );
+  const recurrentesEn = (m: Moneda) =>
+    r2(
+      recurrentesDe(res, m)
+        .filter((r) => r.restantes === null || r.restantes >= k)
+        .reduce((s, r) => s + r.row[m], 0),
+    );
+  const cuotas = cuotasEn('pesos');
+  const recurrentes = recurrentesEn('pesos');
+  return { cuotas, recurrentes, total: r2(cuotas + recurrentes), usd: r2(cuotasEn('usd') + recurrentesEn('usd')) };
 }

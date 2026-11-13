@@ -82,8 +82,8 @@ describe('gastos recurrentes en la proyección', () => {
   });
 
   it('estima lo que ya se sabe de los meses que todavía no tienen resumen', () => {
-    expect(estimadoMes(res, 1)).toEqual({ cuotas: 100, recurrentes: 50, recurrentesUsd: 5, total: 150 });
-    expect(estimadoMes(res, 2)).toEqual({ cuotas: 0, recurrentes: 50, recurrentesUsd: 5, total: 50 });
+    expect(estimadoMes(res, 1)).toEqual({ cuotas: 100, recurrentes: 50, total: 150, usd: 5 });
+    expect(estimadoMes(res, 2)).toEqual({ cuotas: 0, recurrentes: 50, total: 50, usd: 5 });
   });
 });
 
@@ -108,5 +108,23 @@ describe('gastos recurrentes con plazo', () => {
       { fecha: '01.01.26', detalle: 'GIMNASIO', cuota: '08/10', recurrente: true, restantes: 2, porMes: 50, total: 100 },
     ]);
     expect(estimadoMes(res, 3).recurrentes).toBe(20);
+  });
+});
+
+describe('proyección en dólares', () => {
+  const res = resumen('2026-10-01', '14 Oct 26', [
+    item(100, { id: 'a', cuota: '01/02', partes: [{ p: 'ana', pesos: 100, usd: 0 }] }),
+    item(0, { id: 'b', detalle: 'SPOTIFY', usd: 5, recurrente: true, partes: [{ p: 'nico', pesos: 0, usd: 5 }] }),
+    item(0, { id: 'c', detalle: 'CURSO', usd: 30, cuota: '02/04', partes: [{ p: 'nico', pesos: 0, usd: 30 }] }),
+  ], [{ mes: 'Noviembre/26', pesos: 100 }]);
+
+  it('proyecta cuotas y recurrentes en dólares por separado, sin la línea del banco', () => {
+    const p = proyeccionCuotas(res, personas, 'usd');
+    expect(p.series.find((s) => s.id === 'nico')?.datos).toEqual([35, 35, 5]);
+    expect(p.series.some((s) => s.id === 'ana')).toBe(false);
+    expect(p.banco.every((v) => v === null)).toBe(true);
+    expect(p.recurrentes).toBe(5);
+    expect(cuotasPendientes(res, 'nico', 'usd').map((c) => [c.detalle, c.total])).toEqual([['CURSO', 60], ['SPOTIFY', 15]]);
+    expect(proyeccionCuotas(res, personas).series.find((s) => s.id === 'ana')?.datos).toEqual([100]);
   });
 });

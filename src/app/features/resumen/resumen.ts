@@ -60,7 +60,7 @@ export class Resumen {
     const ultimo = this.lista().at(-1);
     if (!mes || !ultimo) return null;
     const e = estimadoMes(ultimo, this.futuros().indexOf(mes) + 1);
-    return e.total || e.recurrentesUsd ? e : null;
+    return e.total || e.usd ? e : null;
   });
 
   /** Meses para el selector centrado: el nombre por el mes en que vence y cuántos ítems faltan asignar. */
